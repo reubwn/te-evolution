@@ -65,14 +65,21 @@ while (<$BED2>) {
   push ( @{$bed2_positional{$a[0]}{starts}}, $a[1] );
   push ( @{$bed2_positional{$a[0]}{ends}}, $a[2] );
   push ( @{$bed2_positional{$a[0]}{feature}}, $a[3] );
-  $bed2{$a[3]} = { 'chrom' => $a[0], 'start' => $a[1], 'end' => $a[2] };
+
+  my $m = "NA";
   if ($membership_hash{$a[3]}) {
-   $bed2{$a[3]} = { 'OG' => $membership_hash{$a[3]} };
+   $m = $membership_hash{$a[3]};
   }
+  $bed2{$a[3]} = {
+    'chrom' => $a[0],
+    'start' => $a[1],
+    'end'   => $a[2],
+    'OG'    => $m
+  };
 }
 close $BED2;
 print Dumper (\%bed2_positional) if $debug;
-print Dumper (\%bed2); 
+print Dumper (\%bed2);
 
 ## open BED1 file:
 open (my $BED1, $bed1file) or die $!;
