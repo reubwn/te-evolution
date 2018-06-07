@@ -73,9 +73,8 @@ while (<$BED2>) {
       'end'   => $a[2],
       'OG'    => $membership_hash{$a[3]}
     };
-    $bed2_membership{$membership_hash{$a[3]}} = $a[3]}; ##key= OG#; val= geneid sp2
+    $bed2_membership{$membership_hash{$a[3]}} = $a[3]; ##key= OG#; val= geneid sp2
   }
-
 }
 close $BED2;
 print Dumper (\%bed2_positional) if $debug;
@@ -86,7 +85,7 @@ open (my $BED1, $bed1file) or die $!;
 while (<$BED1>) {
   chomp;
   my @a = split (/\s+/, $_);
-  print join ("\t", @a, $membership_hash{$a[3]}, $bed2$bed2_membership{$membership_hash{$a[3]}}, "\n");
+  print join ("\t", @a, $membership_hash{$a[3]}, $bed2_membership{$membership_hash{$a[3]}}, "\n");
 
   if ($membership_hash{$a[3]}) { ## is gene
 
