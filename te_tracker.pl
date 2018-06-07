@@ -25,14 +25,15 @@ OUTPUTS
 
 \n";
 
-my ($bed1file, $bed2file, $orthofinderfile, $outfile, $help);
+my ($bed1file, $bed2file, $orthofinderfile, $outfile, $help, $debug);
 
 GetOptions (
   '1|bed1=s' => \$bed1file,
   '2|bed2=s' => \$bed2file,
   'r|orthofinder=s' => \$orthofinderfile,
   'o|outfile:s' => \$outfile,
-  'h|help' => \$help
+  'h|help' => \$help,
+  'd|debug' => \$debug
 );
 
 die $usage if $help;
@@ -64,13 +65,14 @@ while (<$BED2>) {
   push ( @{$bed2_positional{$a[0]}{starts}}, $a[1] );
   push ( @{$bed2_positional{$a[0]}{ends}}, $a[2] );
   push ( @{$bed2_positional{$a[0]}{feature}}, $a[3] );
-  # $bed2{$a[3]} = { 'chrom' => $a[0], 'start' => $a[1], 'end' => $a[2] };
-  # if ($membership_hash{$a[3]}) {
-  #   $bed2{$a[3]} = { 'OG' => $membership_hash{$a[3]} };
-  # }
+  $bed2{$a[3]} = { 'chrom' => $a[0], 'start' => $a[1], 'end' => $a[2] };
+  if ($membership_hash{$a[3]}) {
+   $bed2{$a[3]} = { 'OG' => $membership_hash{$a[3]} };
+  }
 }
 close $BED2;
-print Dumper(\%bed2_positional);
+print Dumper (\%bed2_positional) if $debug;
+print Dumper (\%bed2); 
 
 ## open BED1 file:
 open (my $BED1, $bed1file) or die $!;
