@@ -57,7 +57,7 @@ print STDERR "[INFO] Number of OGs in $orthofinderfile: ".(keys %orthogroups_has
 print STDERR "[INFO] Number of genes in $orthofinderfile: ".(keys %membership_hash)."\n";
 
 ## parse BED2 file:
-my (%bed1, %bed2, %bed2_positional);
+my (%bed1, %bed2, %bed2_positional, %bed2_membership);
 open (my $BED2, $bed2file) or die $!;
 while (<$BED2>) {
   chomp;
@@ -66,26 +66,28 @@ while (<$BED2>) {
   push ( @{$bed2_positional{$a[0]}{ends}}, $a[2] );
   push ( @{$bed2_positional{$a[0]}{feature}}, $a[3] );
 
-  my $m = "NA";
   if ($membership_hash{$a[3]}) {
-   $m = $membership_hash{$a[3]};
+    $bed2{$a[3]} = {
+      'chrom' => $a[0],
+      'start' => $a[1],
+      'end'   => $a[2],
+      'OG'    => $membership_hash{$a[3]}
+    };
+    $bed2_membership{$membership_hash{$a[3]}} = $a[3]}; ##key= OG#; val= geneid sp2
   }
-  $bed2{$a[3]} = {
-    'chrom' => $a[0],
-    'start' => $a[1],
-    'end'   => $a[2],
-    'OG'    => $m
-  };
+
 }
 close $BED2;
 print Dumper (\%bed2_positional) if $debug;
-print Dumper (\%bed2);
+print Dumper (\%bed2) if $debug;
 
 ## open BED1 file:
 open (my $BED1, $bed1file) or die $!;
 while (<$BED1>) {
   chomp;
   my @a = split (/\s+/, $_);
+  print join ("\t", @a, $membership_hash{$a[3]}, $bed2$bed2_membership{$membership_hash{$a[3]}}, "\n");
+
   if ($membership_hash{$a[3]}) { ## is gene
 
   }
