@@ -85,10 +85,12 @@ open (my $BED1, $bed1file) or die $!;
 while (<$BED1>) {
   chomp;
   my @a = split (/\s+/, $_);
-  print join ("\t", @a, $membership_hash{$a[3]}, $bed2_membership{$membership_hash{$a[3]}}, "\n");
 
   if ($membership_hash{$a[3]}) { ## is gene
-
+    ## need to essentially align the relevant region from BED2 to the BED1 region, anchored by OG#
+    print join ("\t", @a, $membership_hash{$a[3]}, $bed2_membership{$membership_hash{$a[3]}}, "\n");
+  } else {
+    print join ("\t", @a, "-", "-", "\n");
   }
 
   $bed1{$a[3]} = { 'chrom' => $a[0], 'start' => $a[1], 'end' => $a[2] };
