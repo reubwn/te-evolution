@@ -44,8 +44,8 @@ open (my $OG, $orthofinderfile) or die $!;
 while (<$OG>) {
   chomp;
   my @a = split (": ", $_);
-  my @b = split ("\s+", $a[1]);
-  $orthogroups{} = \@b;
+  my @b = split (/\s+/, $a[1]);
+  $orthogroups_hash{$a[0]} = \@b; ##key= OG#; val= @[ geneids ]
   foreach (@b) {
     ## each gene has its OG#
     $membership_hash{$_} = $a[0]; ##key= geneid; val= OG#
@@ -60,7 +60,7 @@ my (%bed1, %bed2, %bed2_positional);
 open (my $BED2, $bed2file) or die $!;
 while (<$BED2>) {
   chomp;
-  my @a = split ("\s+", $_);
+  my @a = split (/\s+/, $_);
   push ( @{$bed2_positional{$a[0]}{starts}}, $a[1] );
   push ( @{$bed2_positional{$a[0]}{ends}}, $a[2] );
   push ( @{$bed2_positional{$a[0]}{feature}}, $a[3] );
@@ -76,7 +76,7 @@ print Dumper(\%bed2_positional);
 open (my $BED1, $bed1file) or die $!;
 while (<$BED1>) {
   chomp;
-  my @a = split ("\s+", $_);
+  my @a = split (/\s+/, $_);
   if ($membership_hash{$a[3]}) { ## is gene
 
   }
