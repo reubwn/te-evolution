@@ -87,8 +87,12 @@ while (<$BED1>) {
   my @a = split (/\s+/, $_);
 
   if ($membership_hash{$a[3]}) { ## is gene
-    ## need to essentially align the relevant region from BED2 to the BED1 region, anchored by OG#
-    print join ("\t", @a, $membership_hash{$a[3]}, $bed2_membership{$membership_hash{$a[3]}}, "\n");
+    if ($bed2_membership{$membership_hash{$a[3]}}) {
+      ## need to essentially align the relevant region from BED2 to the BED1 region, anchored by OG#
+      print join ("\t", @a, $membership_hash{$a[3]}, $bed2_membership{$membership_hash{$a[3]}}, "\n");
+    } else {
+      print join ("\t", @a, $membership_hash{$a[3]}, "-", "\n");
+    }
   } else {
     print join ("\t", @a, "-", "-", "\n");
   }
