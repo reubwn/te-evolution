@@ -115,10 +115,10 @@ open (my $CYTOBANDS, ">".$outprefix."_cytobands.txt") or die $!;
 print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain", "\n");
 
 ## process $collinearity_hash
-foreach (sort {$a<=>$b} keys %collinearity_hash) {
+foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get start and end genes in LCB array
-  my $start = ${ $collinearity_hash{$_}{'genes1'} }[0];
-  my $end = ${ $collinearity_hash{$_}{'genes1'} }[-1];
+  my $start = ${ $collinearity_hash{$block}{'genes1'} }[0];
+  my $end = ${ $collinearity_hash{$block}{'genes1'} }[-1];
   ## slice from MCScanX genes file to get coordinates
   `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $genes_infile > tmp1`;
   my %ideogram;
@@ -133,7 +133,7 @@ foreach (sort {$a<=>$b} keys %collinearity_hash) {
   }
   ## print regions to ideogram file, setting start and end coords as 1st bp and last bp of genes in that region...
   foreach (nsort keys %ideogram) {
-    print $IDEOGRAM join ("\t", $_, ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1], "\n");
+    print $IDEOGRAM join ("\t", join("_",$_,$block), ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1], "\n");
   }
 }
 close $IDEOGRAM;
