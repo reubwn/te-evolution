@@ -99,8 +99,8 @@ while (<$COLL>) {
   } else {
     my @F = split (m/\s+/, $_);
     if ($scores_hash{$F[0]}) { ##analyse blocks with Ks <= $ks_threshold
-      $genes_hash{$F[2]} = (); ##note genes that form LCB
-      $genes_hash{$F[3]} = ();
+      $genes_hash{$F[2]}++; ##note genes that form LCB
+      $genes_hash{$F[3]}++;
       push ( @{ $collinearity_hash{$F[0]}{'genes1'} }, $F[2]); ##anon array of member genes from species1
       push ( @{ $collinearity_hash{$F[0]}{'genes2'} }, $F[3]);
     } else {
@@ -109,6 +109,7 @@ while (<$COLL>) {
   }
 }
 close $COLL;
+print STDERR "[INFO] Number of genes in LCBs: ".scalar(keys %genes_hash)."\n";
 
 ## open ideogram and cytoband files
 open (my $IDEOGRAM, ">".$outprefix."_ideogram.txt") or die $!;
