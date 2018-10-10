@@ -116,12 +116,12 @@ open (my $CYTOBANDS, ">".$outprefix."_cytobands.txt") or die $!;
 print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain", "\n");
 
 ## process $collinearity_hash
-foreach {sort {$a<=>$b} keys %collinearity_hash} {
+foreach (sort {$a<=>$b} keys %collinearity_hash) {
   ## get start and end genes in LCB array
-  my @a = @{ $collinearity_hash{$_}{'genes1'} };
-  my $start = $a[0]; my $end = $a[-1];
+  my $start = ${ $collinearity_hash{$_}{'genes1'} }[0];
+  my $end = ${ $collinearity_hash{$_}{'genes1'} }[-1];
   ## slice from GFF to get coordinates
-  `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $gff_infile | grep mRNA > tmp1`;
+  `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end1\E/)}' $gff_infile | grep mRNA > tmp1`;
   my %ideogram;
   open (my $TMP, "tmp1") or die $!;
   while (<$TMP>) {
