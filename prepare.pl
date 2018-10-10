@@ -121,7 +121,7 @@ foreach (sort {$a<=>$b} keys %collinearity_hash) {
   my $start = ${ $collinearity_hash{$_}{'genes1'} }[0];
   my $end = ${ $collinearity_hash{$_}{'genes1'} }[-1];
   ## slice from GFF to get coordinates
-  `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end1\E/)}' $gff_infile | grep mRNA > tmp1`;
+  `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $gff_infile | grep mRNA > tmp1`;
   my %ideogram;
   open (my $TMP, "tmp1") or die $!;
   while (<$TMP>) {
