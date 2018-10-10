@@ -17,10 +17,9 @@ SYNOPSIS
 OPTIONS
   -c|--collinearity [FILE]   : MCScanX collinearity file (reformatted!)
   -s|--score        [FILE]   : MCScanX score file
+  -g|--genes        [FILE]   : MCScanX genes annotation file
   -t|--te1          [FILE]   : TE annotation file (species 1) (GFF3)
   -T|--te2          [FILE]   : TE annotation file (species 1) (GFF3)
-  -g|--gff1         [FILE]   : Genes annotation file (species 1) (GFF3)
-  -G|--gff2         [FILE]   : Genes annotation file (species 2) (GFF3)
   -n|--nnns         [FILE]   : NNNs annotation file (GFF3) [!!TODO]
   -v|--coverage     [FILE]   : coverage annotation file [!!TODO]
   -k|--ks           [FLOAT]  : Ks threshold to filter LCBs
@@ -34,7 +33,7 @@ OUTPUTS
 my (
   $tes_infile,
   $mcscanx_infile,
-  $gff_infile,
+  $genes_infile,
   $score_infile,
   $nnns_infile,
   $coverage_infile,
@@ -47,7 +46,7 @@ my $outprefix = "prepare";
 GetOptions (
   't|tes=s' => \$tes_infile,
   'c|collinearity=s' => \$mcscanx_infile,
-  'g|gff=s' => \$gff_infile,
+  'g|gff=s' => \$genes_infile,
   's|score:s' => \$score_infile,
   'n|nnns:s' => \$nnns_infile,
   'c|coverage:s' => \$coverage_infile,
@@ -58,7 +57,7 @@ GetOptions (
 );
 
 die $usage if $help;
-die $usage unless ($tes_infile && $mcscanx_infile && $gff_infile);
+die $usage unless ($tes_infile && $mcscanx_infile && $genes_infile);
 
 ## stuff
 my (
@@ -120,19 +119,14 @@ foreach (sort {$a<=>$b} keys %collinearity_hash) {
   ## get start and end genes in LCB array
   my $start = ${ $collinearity_hash{$_}{'genes1'} }[0];
   my $end = ${ $collinearity_hash{$_}{'genes1'} }[-1];
-  ## slice from GFF to get coordinates
-  `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $gff_infile | grep mRNA > tmp1`;
+  ## slice from MCScanX genes file to get coordinates
+  `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $genes_infile > tmp1`;
   my %ideogram;
   open (my $TMP, "tmp1") or die $!;
   while (<$TMP>) {
     my @F = split (m/\s+/, $_);
-    ## regex to get the 'ID' field from GFF as name, assumes '|' delim with Augustus style gene names eg: 'ABC|g1.t1' etc
-    if ($F[8] =~ m/ID\=(\w+\|g\d+\.t\d+);.+/) {
-      print $CYTOBANDS join ("\t", $F[0], $F[3], $F[4], $1, "\n");
-    } else {
-      ## otherwise set name to 9th field in GFF
-      print $CYTOBANDS join ("\t", $F[0], $F[3], $F[4], $F[8], "\n");
-    }
+    ## print genes to cytobands file
+    print $CYTOBANDS join ("\t", $F[0], $F[2], $F[3], $F[1], "acen", "\n");
     ## get all coords of all genes in region
     push (@{$ideogram{$F[0]}}, $F[3]);
     push (@{$ideogram{$F[0]}}, $F[4]);
