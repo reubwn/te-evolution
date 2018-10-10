@@ -7,34 +7,40 @@
 
 use strict;
 use warnings;
+
 use Getopt::Long;
 use Sort::Naturally;
 use Data::Dumper;
+
+use Bio::Seq;
+use Bio::SeqIO;
 
 my $usage = "
 SYNOPSIS
 
 OPTIONS
-  -c|--collinearity [FILE]   : MCScanX collinearity file (reformatted!)
-  -s|--score        [FILE]   : MCScanX score file
-  -g|--genes        [FILE]   : MCScanX genes annotation file
-  -t|--te1          [FILE]   : TE annotation file (species 1) (GFF3)
-  -T|--te2          [FILE]   : TE annotation file (species 1) (GFF3)
+  -c|--collinearity [FILE]   : MCScanX collinearity file (reformatted!) [*]
+  -s|--score        [FILE]   : MCScanX score file [*]
+  -g|--genes        [FILE]   : MCScanX genes annotation file [*]
+  -f|--fasta        [FILE]   : Genome fasta file [*]
+  -t|--te1          [FILE]   : TE annotation file (species 1) (GFF3) [*]
   -n|--nnns         [FILE]   : NNNs annotation file (GFF3) [!!TODO]
   -v|--coverage     [FILE]   : coverage annotation file [!!TODO]
   -k|--ks           [FLOAT]  : Ks threshold to filter LCBs
   -o|--out          [STRING] : Output filename
   -h|--help                  : this message
+[*] Required input
 
 OUTPUTS
 \n";
 
 ## input
 my (
-  $tes_infile,
   $collinearity_infile,
-  $genes_infile,
   $score_infile,
+  $genes_infile,
+  $genome_infile,
+  $tes_infile,
   $nnns_infile,
   $coverage_infile,
   $help, $debug
@@ -44,10 +50,11 @@ my $ks_threshold = 0.2;
 my $outprefix = "prepare";
 
 GetOptions (
-  't|tes=s' => \$tes_infile,
   'c|collinearity=s' => \$collinearity_infile,
+  's|score=s' => \$score_infile,
   'g|genes=s' => \$genes_infile,
-  's|score:s' => \$score_infile,
+  'f|fasta=s' => \$genome_infile,
+  't|tes=s' => \$tes_infile,
   'n|nnns:s' => \$nnns_infile,
   'v|coverage:s' => \$coverage_infile,
   'k|ks:f' => \$ks_threshold,
@@ -57,13 +64,14 @@ GetOptions (
 );
 
 die $usage if $help;
-die $usage unless ($tes_infile && $collinearity_infile && $genes_infile);
+die $usage unless ($collinearity_infile && $score_infile && $genes_infile && $genome_infile && $tes_infile);
 
 ## stuff
 my (
   %scores_hash,
   %collinearity_hash,
   %genes_hash,
+  %genome_hash,
   %tes_hash,
   %nnns_hash,
   %coverage_hash
@@ -111,11 +119,24 @@ while (<$COLL>) {
 close $COLL;
 print STDERR "[INFO] Number of genes in LCBs: ".scalar(keys %genes_hash)."\n";
 
-## open ideogram and cytoband files
-open (my $IDEOGRAM, ">".$outprefix."_ideogram.txt") or die $!;
-print $IDEOGRAM join ("\t", "chr", "start", "end") . "\n";
-open (my $CYTOBANDS, ">".$outprefix."_cytobands.txt") or die $!;
-print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
+## parse genome fasta file
+my $in = Bio::SeqIO -> new( -file => $genome_infile, -format => "fasta" );
+while ( my $seqobj = $in->next_seq() ) {
+  $genome_hash{ $seqobj->display_name() } = $seqobj->length();
+}
+
+## make ideogram genome file
+open (my $IDEOGRAM_GENOME, ">".$outprefix."_ideogram.genome.txt") or die $!;
+print $IDEOGRAM_GENOME join ("\t", "chr", "start", "end") . "\n";
+foreach (nsort keys %genome_hash) {
+  print $IDEOGRAM_GENOME join ("\t", $_, "1", $genome_hash{$_}) . "\n";
+}
+close $IDEOGRAM_GENOME;
+
+## open cytobands and ideogram LCBs file
+open (my $IDEOGRAM_LCB, ">".$outprefix."_ideogram.LCBs.txt") or die $!;
+open (my $CYTOBANDS_LCB, ">".$outprefix."_cytobands.LCBs.txt") or die $!;
+print $CYTOBANDS_LCB join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
 
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
@@ -133,23 +154,32 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## slice from MCScanX genes file to get coordinates
   `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
   ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
-  my %ideogram;
+  # my %ideogram;
+  my @coordinates1;
   open (my $TMP1, "tmp1") or die $!;
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
-    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, "background", "gneg") . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
+    if ($. == 1) {
+      print $IDEOGRAM_LCB "$F[0]\t";
+      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), -1e+5, 1e+5, "background", "gneg") . "\n"; ##print arbitrarily large blank cytoband for each block for visualisation
+    }
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
+      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
 
     ## get all coords of all genes in region
-    push (@{$ideogram{$F[0]}}, $F[2]);
-    push (@{$ideogram{$F[0]}}, $F[3]);
+    # push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[2]); ##key=LCB#_chrom; val=@{array of start-end coordinates}
+    # push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[3]);
+    push (@coordinates1, $F[2]);
+    push (@coordinates1, $F[3]);
   }
   close $TMP1;
+  @coordinates1 = sort {$a<=>$b} @coordinates1;
+  print $IDEOGRAM_LCB join ("\t", $coordinates1[0], $coordinates1[-1]) . "\n";
+  # print STDERR "[INFO] BED region: "
 
   ## then do for 'genes2'
   ## ====================
@@ -163,26 +193,31 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     print STDERR "[INFO] Start2: $end2\n[INFO] End2: $start2\n"; ##switcheroo
     `perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile > tmp2`;
   }
+  my @coordinates2;
   open (my $TMP2, "tmp2") or die $!;
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
-    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, "background", "gneg") . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
+    print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), -1e+5, 1e+5, "background", "gneg") . "\n" if $. == 1;
     if ($genes_hash{$F[1]}) {
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
+      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
-    push (@{$ideogram{$F[0]}}, $F[2]);
-    push (@{$ideogram{$F[0]}}, $F[3]);
+    # push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[2]);
+    # push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[3]);
+    push (@coordinates2, $F[2]);
+    push (@coordinates2, $F[3]);
   }
   close $TMP2;
-  foreach (nsort keys %ideogram) {
-    print $IDEOGRAM join ("\t", join("_","LCB$block",$_), ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1]) . "\n";
-  }
+  @coordinates2 = sort {$a<=>$b} @coordinates2;
+  print $IDEOGRAM_LCB join ("\t", $coordinates2[0], $coordinates2[-1]) . "\n";
+  # foreach (nsort keys %ideogram) {
+  #   print $IDEOGRAM_LCB join ("\t", $_, ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1]) . "\n";
+  # }
 
 }
-close $IDEOGRAM;
-close $CYTOBANDS;
+close $IDEOGRAM_LCB;
+close $CYTOBANDS_LCB;
 
 
 __END__
