@@ -169,16 +169,15 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     } else {
       print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
-
     ## get all coords of all genes in region
-    # push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[2]); ##key=LCB#_chrom; val=@{array of start-end coordinates}
-    # push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[3]);
-    push (@coordinates1, $F[2]);
-    push (@coordinates1, $F[3]);
+    push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[2]); ##key=LCB#_chrom; val=@{array of start-end coordinates}
+    push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[3]);
+    # push (@coordinates1, $F[2]);
+    # push (@coordinates1, $F[3]);
   }
   close $TMP1;
-  @coordinates1 = sort {$a<=>$b} @coordinates1;
-  print $IDEOGRAM_LCB join ("\t", $coordinates1[0], $coordinates1[-1]) . "\n";
+  # @coordinates1 = sort {$a<=>$b} @coordinates1;
+  # print $IDEOGRAM_LCB join ("\t", $coordinates1[0], $coordinates1[-1]) . "\n";
   # print STDERR "[INFO] BED region: "
 
   ## then do for 'genes2'
@@ -206,17 +205,17 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     } else {
       print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
-    # push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[2]);
-    # push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[3]);
-    push (@coordinates2, $F[2]);
-    push (@coordinates2, $F[3]);
+    push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[2]);
+    push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[3]);
+    # push (@coordinates2, $F[2]);
+    # push (@coordinates2, $F[3]);
   }
   close $TMP2;
-  @coordinates2 = sort {$a<=>$b} @coordinates2;
-  print $IDEOGRAM_LCB join ("\t", $coordinates2[0], $coordinates2[-1]) . "\n";
-  # foreach (nsort keys %ideogram) {
-  #   print $IDEOGRAM_LCB join ("\t", $_, ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1]) . "\n";
-  # }
+  # @coordinates2 = sort {$a<=>$b} @coordinates2;
+  # print $IDEOGRAM_LCB join ("\t", $coordinates2[0], $coordinates2[-1]) . "\n";
+  foreach (nsort keys %ideogram) {
+    print $IDEOGRAM_LCB join ("\t", $_, ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1]) . "\n";
+  }
 
 }
 close $IDEOGRAM_LCB;
