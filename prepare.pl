@@ -118,8 +118,8 @@ print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain", "\n");
 ## process $collinearity_hash
 foreach {sort {$a<=>$b} keys %collinearity_hash} {
   ## get start and end genes in LCB array
-  my $start = ${@{ $collinearity_hash{$_}{'genes1'} }}[0];
-  my $end = ${@{ $collinearity_hash{$_}{'genes1'} }}[-1];
+  my @a = @{ $collinearity_hash{$_}{'genes1'} };
+  my $start = $a[0]; my $end = $a[-1];
   ## slice from GFF to get coordinates
   `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $gff_infile | grep mRNA > tmp1`;
   my %ideogram;
