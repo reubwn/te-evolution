@@ -32,7 +32,7 @@ OUTPUTS
 ## input
 my (
   $tes_infile,
-  $mcscanx_infile,
+  $collinearity_infile,
   $genes_infile,
   $score_infile,
   $nnns_infile,
@@ -45,11 +45,11 @@ my $outprefix = "prepare";
 
 GetOptions (
   't|tes=s' => \$tes_infile,
-  'c|collinearity=s' => \$mcscanx_infile,
+  'c|collinearity=s' => \$collinearity_infile,
   'g|genes=s' => \$genes_infile,
   's|score:s' => \$score_infile,
   'n|nnns:s' => \$nnns_infile,
-  'c|coverage:s' => \$coverage_infile,
+  'v|coverage:s' => \$coverage_infile,
   'k|ks:f' => \$ks_threshold,
   'o|outprefix:s' => \$outprefix,
   'h|help' => \$help,
@@ -57,7 +57,7 @@ GetOptions (
 );
 
 die $usage if $help;
-#die $usage unless ($tes_infile && $mcscanx_infile && $genes_infile);
+die $usage unless ($tes_infile && $collinearity_infile && $genes_infile);
 
 ## stuff
 my (
@@ -91,7 +91,8 @@ print STDERR "[INFO] Scores file: $score_infile\n";
 print STDERR "[INFO] Number of LCBs passing Ks threshold (<= $ks_threshold): ".(scalar(keys %scores_hash))."\n";
 
 ## parse collinearity file
-open (my $COLL, $mcscanx_infile) or die $!;
+print STDERR "[INFO] MCScanX collinearity file: $collinearity_infile\n";
+open (my $COLL, $collinearity_infile) or die $!;
 while (<$COLL>) {
   if ($_ =~ m/^#/) {
     next;
@@ -106,7 +107,6 @@ while (<$COLL>) {
   }
 }
 close $COLL;
-print STDERR "[INFO] MCScanX collinearity file: $mcscanx_infile\n";
 
 ## open ideogram and cytoband files
 open (my $IDEOGRAM, ">".$outprefix."_ideogram.txt") or die $!;
