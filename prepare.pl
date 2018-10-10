@@ -137,12 +137,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   open (my $TMP1, "tmp1") or die $!;
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
-    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, "background", "gneg") . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
+    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, '"background"', '"gneg"') . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], '"$F[1]"', '"stalk"') . "\n";
     } else {
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], '"$F[1]"', '"gpos25"') . "\n";
     }
 
     ## get all coords of all genes in region
@@ -166,11 +166,11 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   open (my $TMP2, "tmp2") or die $!;
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
-    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, "background", "gneg") . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
+    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, '"background"', '"gneg"') . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
     if ($genes_hash{$F[1]}) {
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], '"$F[1]"', '"stalk"') . "\n";
     } else {
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], '"$F[1]"', '"gpos25"') . "\n";
     }
     push (@{$ideogram{$F[0]}}, $F[2]);
     push (@{$ideogram{$F[0]}}, $F[3]);
