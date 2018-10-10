@@ -154,8 +154,8 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## slice from MCScanX genes file to get coordinates
   `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
   ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
-  # my %ideogram;
-  my @coordinates1;
+  my %ideogram;
+  # my @coordinates1;
   open (my $TMP1, "tmp1") or die $!;
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
@@ -192,7 +192,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     print STDERR "[INFO] Start2: $end2\n[INFO] End2: $start2\n"; ##switcheroo
     `perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile > tmp2`;
   }
-  my @coordinates2;
+  # my @coordinates2;
   open (my $TMP2, "tmp2") or die $!;
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
