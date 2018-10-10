@@ -128,8 +128,8 @@ foreach (sort {$a<=>$b} keys %collinearity_hash) {
     ## print genes to cytobands file
     print $CYTOBANDS join ("\t", $F[0], $F[2], $F[3], $F[1], "acen", "\n");
     ## get all coords of all genes in region
+    push (@{$ideogram{$F[0]}}, $F[2]);
     push (@{$ideogram{$F[0]}}, $F[3]);
-    push (@{$ideogram{$F[0]}}, $F[4]);
   }
   ## print regions to ideogram file, setting start and end coords as 1st bp and last bp of genes in that region...
   foreach (nsort keys %ideogram) {
