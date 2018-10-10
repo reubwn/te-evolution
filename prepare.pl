@@ -46,7 +46,7 @@ my $outprefix = "prepare";
 GetOptions (
   't|tes=s' => \$tes_infile,
   'c|collinearity=s' => \$mcscanx_infile,
-  'g|gff=s' => \$genes_infile,
+  'g|genes=s' => \$genes_infile,
   's|score:s' => \$score_infile,
   'n|nnns:s' => \$nnns_infile,
   'c|coverage:s' => \$coverage_infile,
@@ -57,7 +57,7 @@ GetOptions (
 );
 
 die $usage if $help;
-die $usage unless ($tes_infile && $mcscanx_infile && $genes_infile);
+#die $usage unless ($tes_infile && $mcscanx_infile && $genes_infile);
 
 ## stuff
 my (
