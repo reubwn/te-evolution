@@ -79,7 +79,7 @@ while (<$SCORES>) {
   } else {
     my @F = split (m/\s+/, $_);
     if ($F[11] <= $ks_threshold) {
-      $scores_hash{$F[0]} = { 'chrom1' => $F[1], 'chrom2' => $F[2], 'ks_avg' => $F[11] }; ##this will include LCBs within species...
+      $scores_hash{$F[0]} = { 'chrom1' => $F[1], 'chrom2' => $F[2], 'orientation' => $F[6], 'ks_avg' => $F[11] }; ##this will include LCBs within species...
     } else {
       $skip++;
     }
@@ -128,7 +128,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   my $start1 = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end1 = ${ $collinearity_hash{$block}{'genes1'} }[-1];
   ## slice from MCScanX genes file to get coordinates
-  `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
+  if ($scores_hash{$block}{'orientation'} eq "plus") {
+    `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
+  } else {
+    ## switch orientation for minus strand LCBs
+    `perl -e 'while (<>) {print if (/\Q$end1\E/../\Q$start1\E/)}' $genes_infile > tmp1`;
+  }
   ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
   my %ideogram;
   open (my $TMP1, "tmp1") or die $!;
@@ -147,17 +152,16 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     push (@{$ideogram{$F[0]}}, $F[3]);
   }
   close $TMP1;
-  ## print regions to ideogram file, setting start and end coords as 1st bp and last bp of genes in that region...
-  #foreach (nsort keys %ideogram) {
-  #  print $IDEOGRAM join ("\t", join("_","LCB$block",$_), ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1], "\n");
-  #}
 
   ## then do for 'genes2'
   ## ====================
   my $start2 = ${ $collinearity_hash{$block}{'genes2'} }[0];
   my $end2 = ${ $collinearity_hash{$block}{'genes2'} }[-1];
-  `perl -e 'while (<>) {print if (/\Q$start2\E/../\Q$end2\E/)}' $genes_infile > tmp2`;
-  #my %ideogram;
+  if ($scores_hash{$block}{'orientation'} eq "plus") {
+    `perl -e 'while (<>) {print if (/\Q$start2\E/../\Q$end2\E/)}' $genes_infile > tmp2`;
+  } else {
+    `perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile > tmp2`;
+  }
   open (my $TMP2, "tmp2") or die $!;
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
