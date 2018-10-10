@@ -126,7 +126,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   while (<$TMP>) {
     my @F = split (m/\s+/, $_);
     ## print genes to cytobands file
-    print $CYTOBANDS join ("\t", $F[0], $F[2], $F[3], $F[1], "acen", "\n");
+    print $CYTOBANDS join ("\t", join("_",$F[0],$block), $F[2], $F[3], $F[1], "acen", "\n");
     ## get all coords of all genes in region
     push (@{$ideogram{$F[0]}}, $F[2]);
     push (@{$ideogram{$F[0]}}, $F[3]);
