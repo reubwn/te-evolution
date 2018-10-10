@@ -132,8 +132,10 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print STDERR "[INFO] Start1: $start1\n[INFO] End1: $end1\n";
   ## slice from MCScanX genes file to get coordinates
   if ($scores_hash{$block}{'orientation'} eq "plus") {
+    print STDERR "[INFO] +\n";
     `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
   } else {
+    print STDERR "[INFO] -\n";
     ## switch orientation for minus strand LCBs
     `perl -e 'while (<>) {print if (/\Q$end1\E/../\Q$start1\E/)}' $genes_infile > tmp1`;
   }
@@ -162,8 +164,10 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   my $end2 = ${ $collinearity_hash{$block}{'genes2'} }[-1];
   print STDERR "[INFO] Start2: $start2\n[INFO] End2: $end2\n";
   if ($scores_hash{$block}{'orientation'} eq "plus") {
+    print STDERR "[INFO] +\n";
     `perl -e 'while (<>) {print if (/\Q$start2\E/../\Q$end2\E/)}' $genes_infile > tmp2`;
   } else {
+    print STDERR "[INFO] -\n";
     `perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile > tmp2`;
   }
   open (my $TMP2, "tmp2") or die $!;
