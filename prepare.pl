@@ -120,33 +120,61 @@ print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain", "\n");
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
 
+  ## CODE BLOCK
+  ## print consecutively each chr in LCB
+  ## first do for 'genes1'
+  ## =====================
   ## get start and end genes in LCB array
   my $start = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end = ${ $collinearity_hash{$block}{'genes1'} }[-1];
-
   ## slice from MCScanX genes file to get coordinates
-  `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $genes_infile > tmp1`;
+  `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $genes_infile > tmp`;
   ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
   my %ideogram;
-  open (my $TMP, "tmp1") or die $!;
+  open (my $TMP, "tmp") or die $!;
   while (<$TMP>) {
     my @F = split (m/\s+/, $_);
-    print $CYTOBANDS join ("\t", join("_",$F[0],$block), -1e+9, 1e+9, "background", "gneg", "\n") if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
+    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, "background", "gneg", "\n") if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
-      print $CYTOBANDS join ("\t", join("_",$F[0],$block), $F[2], $F[3], $F[1], "stalk", "\n");
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk", "\n");
     } else {
-      print $CYTOBANDS join ("\t", join("_",$F[0],$block), $F[2], $F[3], $F[1], "gpos25", "\n");
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25", "\n");
     }
 
     ## get all coords of all genes in region
     push (@{$ideogram{$F[0]}}, $F[2]);
     push (@{$ideogram{$F[0]}}, $F[3]);
   }
+  close $TMP;
   ## print regions to ideogram file, setting start and end coords as 1st bp and last bp of genes in that region...
   foreach (nsort keys %ideogram) {
-    print $IDEOGRAM join ("\t", join("_",$_,$block), ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1], "\n");
+    print $IDEOGRAM join ("\t", join("_","LCB$block",$F[0]), ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1], "\n");
   }
+
+  ## then do for 'genes2'
+  ## ====================
+  my $start = ${ $collinearity_hash{$block}{'genes2'} }[0];
+  my $end = ${ $collinearity_hash{$block}{'genes2'} }[-1];
+  `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $genes_infile > tmp`;
+  my %ideogram;
+  open (my $TMP, "tmp") or die $!;
+  while (<$TMP>) {
+    my @F = split (m/\s+/, $_);
+    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, "background", "gneg", "\n") if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
+    if ($genes_hash{$F[1]}) {
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk", "\n");
+    } else {
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25", "\n");
+    }
+    push (@{$ideogram{$F[0]}}, $F[2]);
+    push (@{$ideogram{$F[0]}}, $F[3]);
+  }
+  close $TMP;
+  foreach (nsort keys %ideogram) {
+    print $IDEOGRAM join ("\t", join("_","LCB$block",$F[0]), ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1], "\n");
+  }
+
 }
 close $IDEOGRAM;
 close $CYTOBANDS;
