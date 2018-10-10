@@ -197,7 +197,10 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   open (my $TMP2, "tmp2") or die $!;
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
-    print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), -1e+5, 1e+5, "background", "gneg") . "\n" if $. == 1;
+    if ($. == 1) {
+      print $IDEOGRAM_LCB "$F[0]\t";
+      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), -1e+5, 1e+5, "background", "gneg") . "\n";
+    }
     if ($genes_hash{$F[1]}) {
       print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
