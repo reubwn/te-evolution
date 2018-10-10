@@ -113,9 +113,9 @@ print STDERR "[INFO] Number of genes in LCBs: ".scalar(keys %genes_hash)."\n";
 
 ## open ideogram and cytoband files
 open (my $IDEOGRAM, ">".$outprefix."_ideogram.txt") or die $!;
-print $IDEOGRAM join ("\t", "chr", "start", "end", "\n");
+print $IDEOGRAM join ("\t", "chr", "start", "end") . "\n";
 open (my $CYTOBANDS, ">".$outprefix."_cytobands.txt") or die $!;
-print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain", "\n");
+print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
 
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
@@ -137,12 +137,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   open (my $TMP1, "tmp1") or die $!;
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
-    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, '"background"', '"gneg"') . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
+    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, "background", "gneg") . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], '"$F[1]"', '"stalk"') . "\n";
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], '"$F[1]"', '"gpos25"') . "\n";
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
 
     ## get all coords of all genes in region
@@ -166,11 +166,11 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   open (my $TMP2, "tmp2") or die $!;
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
-    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, '"background"', '"gneg"') . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
+    print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), -1e+9, 1e+9, "background", "gneg") . "\n" if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
     if ($genes_hash{$F[1]}) {
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], '"$F[1]"', '"stalk"') . "\n";
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
-      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], '"$F[1]"', '"gpos25"') . "\n";
+      print $CYTOBANDS join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
     push (@{$ideogram{$F[0]}}, $F[2]);
     push (@{$ideogram{$F[0]}}, $F[3]);
