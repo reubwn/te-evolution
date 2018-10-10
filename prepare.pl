@@ -160,7 +160,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) {
-      print $IDEOGRAM_LCB "$F[0]\t";
+      # print $IDEOGRAM_LCB "$F[0]\t";
       print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), -1e+5, 1e+5, "background", "gneg") . "\n"; ##print arbitrarily large blank cytoband for each block for visualisation
     }
     ## print genes to cytobands file
@@ -197,7 +197,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) {
-      print $IDEOGRAM_LCB "$F[0]\t";
+      # print $IDEOGRAM_LCB "$F[0]\t";
       print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), -1e+5, 1e+5, "background", "gneg") . "\n";
     }
     if ($genes_hash{$F[1]}) {
