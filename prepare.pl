@@ -136,6 +136,7 @@ close $IDEOGRAM_GENOME;
 ## open cytobands and ideogram LCBs file
 open (my $IDEOGRAM_LCB, ">".$outprefix."_ideogram.LCBs.txt") or die $!;
 open (my $CYTOBANDS_LCB, ">".$outprefix."_cytobands.LCBs.txt") or die $!;
+print $IDEOGRAM_LCB join ("\t", "chr", "start", "end") . "\n";
 print $CYTOBANDS_LCB join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
 
 ## process $collinearity_hash
