@@ -119,9 +119,6 @@ print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain", "\n");
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
 
-  ## print arbitrarily large blank cytoband for each block for visualisation
-  print $CYTOBANDS join ("\t", join("_",$F[0],$block), -1e+9, 1e+9, "background", "gneg", "\n");
-
   ## get start and end genes in LCB array
   my $start = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end = ${ $collinearity_hash{$block}{'genes1'} }[-1];
@@ -133,6 +130,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   open (my $TMP, "tmp1") or die $!;
   while (<$TMP>) {
     my @F = split (m/\s+/, $_);
+    print $CYTOBANDS join ("\t", join("_",$F[0],$block), -1e+9, 1e+9, "background", "gneg", "\n") if $. == 1; ##print arbitrarily large blank cytoband for each block for visualisation
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
       print $CYTOBANDS join ("\t", join("_",$F[0],$block), $F[2], $F[3], $F[1], "stalk", "\n");
