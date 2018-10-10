@@ -99,6 +99,8 @@ while (<$COLL>) {
   } else {
     my @F = split (m/\s+/, $_);
     if ($scores_hash{$F[0]}) { ##analyse blocks with Ks <= $ks_threshold
+      $genes_hash{$F[2]} = (); ##note genes that form LCB
+      $genes_hash{$F[3]} = ();
       push ( @{ $collinearity_hash{$F[0]}{'genes1'} }, $F[2]); ##anon array of member genes from species1
       push ( @{ $collinearity_hash{$F[0]}{'genes2'} }, $F[3]);
     } else {
@@ -116,17 +118,28 @@ print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain", "\n");
 
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
+
+  ## print arbitrarily large blank cytoband for each block for visualisation
+  print $CYTOBANDS join ("\t", join("_",$F[0],$block), -1e+9, 1e+9, "background", "gneg", "\n");
+
   ## get start and end genes in LCB array
   my $start = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end = ${ $collinearity_hash{$block}{'genes1'} }[-1];
+
   ## slice from MCScanX genes file to get coordinates
   `perl -e 'while (<>) {print if (/\Q$start\E/../\Q$end\E/)}' $genes_infile > tmp1`;
+  ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
   my %ideogram;
   open (my $TMP, "tmp1") or die $!;
   while (<$TMP>) {
     my @F = split (m/\s+/, $_);
     ## print genes to cytobands file
-    print $CYTOBANDS join ("\t", join("_",$F[0],$block), $F[2], $F[3], $F[1], "acen", "\n");
+    if ($genes_hash{$F[1]}) { ##gene is part of LCB
+      print $CYTOBANDS join ("\t", join("_",$F[0],$block), $F[2], $F[3], $F[1], "stalk", "\n");
+    } else {
+      print $CYTOBANDS join ("\t", join("_",$F[0],$block), $F[2], $F[3], $F[1], "gpos25", "\n");
+    }
+
     ## get all coords of all genes in region
     push (@{$ideogram{$F[0]}}, $F[2]);
     push (@{$ideogram{$F[0]}}, $F[3]);
