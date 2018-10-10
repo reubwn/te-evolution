@@ -41,7 +41,7 @@ my (
   $help, $debug
 );
 ## defaults
-my $ks_threshold = 0.2;
+my $ks_threshold = "0.2";
 my $outprefix = "prepare";
 
 GetOptions (
@@ -51,7 +51,7 @@ GetOptions (
   's|score:s' => \$score_infile,
   'n|nnns:s' => $nnns_infile,
   'c|coverage:s' => $coverage_infile,
-  'k|ks:f' => $ks_threshold,
+  'k|ks:s' => $ks_threshold,
   'o|outprefix:s' => \$outprefix,
   'h|help' => \$help,
   'd|debug' => \$debug
