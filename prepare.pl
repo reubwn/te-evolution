@@ -119,6 +119,8 @@ print $CYTOBANDS join ("\t", "chr", "start", "end", "name", "gieStain", "\n");
 
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
+  print STDERR "[INFO] Block number: $block\n";
+  print STDERR "[INFO] LCB orientation: $scores_hash{$block}{'orientation'}\n";
 
   ## CODE BLOCK
   ## print consecutively each chr in LCB
