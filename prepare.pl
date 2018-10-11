@@ -173,8 +173,8 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     }
     ## get all coords of all genes in region
     $ideogram{"LCB#$block:1"}{chrom} = $F[0]; ##key=LCB##:1; val=chrom
-    push ( @{ $ideogram{"LCB#$block:1"} }{coords}, $F[2] ); ##key=LCB##:1; val=@{array of start-end coordinates}
-    push ( @{ $ideogram{"LCB#$block:1"} }{coords}, $F[3] );
+    push ( @{ $ideogram{"LCB#$block:1"}{coords} }, $F[2] ); ##key=LCB##:1; val=@{array of start-end coordinates}
+    push ( @{ $ideogram{"LCB#$block:1"}{coords} }, $F[3] );
   }
   close $TMP1;
   # @coordinates1 = sort {$a<=>$b} @coordinates1;
@@ -205,8 +205,8 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
       print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
     $ideogram{"LCB#$block:2"}{chrom} = $F[0]; ##
-    push ( @{ $ideogram{"LCB#$block:2"} }{coords}, $F[2] );
-    push ( @{ $ideogram{"LCB#$block:2"} }{coords}, $F[3] );
+    push ( @{ $ideogram{"LCB#$block:2"}{coords} }, $F[2] );
+    push ( @{ $ideogram{"LCB#$block:2"}{coords} }, $F[3] );
   }
   close $TMP2;
   ## check there are 2 chroms in %ideogram
