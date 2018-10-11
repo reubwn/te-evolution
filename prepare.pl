@@ -24,8 +24,8 @@ OPTIONS
   -s|--score        [FILE]   : MCScanX score file [*]
   -g|--genes        [FILE]   : MCScanX genes annotation file [*]
   -f|--fasta        [FILE]   : Genome fasta file [*]
-  -t|--tes1         [FILE]   : TE annotation file (species 1) (GFF3) [*]
-  -T|--tes2         [FILE]   : TE annotation file (species 1) (GFF3)
+  -1|--tes1         [FILE]   : TE annotation file (species 1) (GFF3) [*]
+  -2|--tes2         [FILE]   : TE annotation file (species 2) (GFF3) [*]
   -n|--nnns         [FILE]   : NNNs annotation file (GFF3) [!!TODO]
   -v|--coverage     [FILE]   : coverage annotation file [!!TODO]
   -k|--ks           [FLOAT]  : Ks threshold to filter LCBs [0.2]
@@ -59,8 +59,8 @@ GetOptions (
   's|score=s' => \$score_infile,
   'g|genes=s' => \$genes_infile,
   'f|fasta=s' => \$genome_infile,
-  'tes1=s' => \$tes_infile1,
-  'tes2:s' => \$tes_infile2,
+  '1|tes1=s' => \$tes_infile1,
+  '2|tes2=s' => \$tes_infile2,
   'n|nnns:s' => \$nnns_infile,
   'v|coverage:s' => \$coverage_infile,
   'k|ks:f' => \$ks_threshold,
@@ -71,7 +71,7 @@ GetOptions (
 );
 ## help and usage
 die $usage if $help;
-die $usage unless ($collinearity_infile && $score_infile && $genes_infile && $genome_infile && $tes_infile1);
+die $usage unless ($collinearity_infile && $score_infile && $genes_infile && $genome_infile && $tes_infile1 && $tes_infile2);
 
 ## stuff
 my (
