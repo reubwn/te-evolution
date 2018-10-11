@@ -10,6 +10,7 @@ use warnings;
 
 use Getopt::Long;
 use Sort::Naturally;
+use List::Util qw( min max );
 use Data::Dumper;
 
 use Bio::Seq;
@@ -23,7 +24,8 @@ OPTIONS
   -s|--score        [FILE]   : MCScanX score file [*]
   -g|--genes        [FILE]   : MCScanX genes annotation file [*]
   -f|--fasta        [FILE]   : Genome fasta file [*]
-  -t|--te1          [FILE]   : TE annotation file (species 1) (GFF3) [*]
+  -t|--tes1          [FILE]   : TE annotation file (species 1) (GFF3) [*]
+  -T|--tes2         [FILE]   : TE annotation file (species 1) (GFF3)
   -n|--nnns         [FILE]   : NNNs annotation file (GFF3) [!!TODO]
   -v|--coverage     [FILE]   : coverage annotation file [!!TODO]
   -k|--ks           [FLOAT]  : Ks threshold to filter LCBs
@@ -40,7 +42,8 @@ my (
   $score_infile,
   $genes_infile,
   $genome_infile,
-  $tes_infile,
+  $tes_infile1,
+  $tes_infile2,
   $nnns_infile,
   $coverage_infile,
   $help, $debug
@@ -54,7 +57,8 @@ GetOptions (
   's|score=s' => \$score_infile,
   'g|genes=s' => \$genes_infile,
   'f|fasta=s' => \$genome_infile,
-  't|tes=s' => \$tes_infile,
+  't|tes1=s' => \$tes_infile1,
+  'T|tes2:s' => \$tes_infile2,
   'n|nnns:s' => \$nnns_infile,
   'v|coverage:s' => \$coverage_infile,
   'k|ks:f' => \$ks_threshold,
@@ -62,7 +66,7 @@ GetOptions (
   'h|help' => \$help,
   'd|debug' => \$debug
 );
-
+## help and usage
 die $usage if $help;
 die $usage unless ($collinearity_infile && $score_infile && $genes_infile && $genome_infile && $tes_infile);
 
@@ -79,7 +83,6 @@ my (
 
 ## parse scores file
 my ($total,$skip) = (0,0);
-## open file
 open (my $SCORES, $score_infile) or die $!;
 while (<$SCORES>) {
   if ($. == 1) {
@@ -141,6 +144,7 @@ open (my $CYTOBANDS_LCB, ">".$outprefix."_cytobands.LCBs.txt") or die $!;
 open (my $REPEATS_LCB, ">".$outprefix."_repeats.LCBs.txt") or die $!;
 print $IDEOGRAM_LCB join ("\t", "chr", "start", "end", "name") . "\n";
 print $CYTOBANDS_LCB join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
+print $REPEATS_LCB join ("\t", "chr", "start", "end", "strand", "name")};
 
 
 ## process $collinearity_hash
@@ -148,7 +152,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print STDERR "[INFO] Block number: $block\n";
   print STDERR "[INFO] LCB orientation: $scores_hash{$block}{'orientation'}\n";
 
-  ## CODE BLOCK
+  ## MAIN BLOCK
   ## print consecutively each chr in LCB
   ## first do for 'genes1'
   ## =====================
@@ -178,9 +182,10 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     push ( @{ $ideogram{"LCB#$block:1"}{coords} }, $F[3] );
   }
   close $TMP1;
-  # @coordinates1 = sort {$a<=>$b} @coordinates1;
-  # print $IDEOGRAM_LCB join ("\t", $coordinates1[0], $coordinates1[-1]) . "\n";
-  # print STDERR "[INFO] BED region: "
+  ## get TEs that intersect with LCB region using bedtools
+  my ($min, $max) = ( (min @{ $ideogram{"LCB#$block:1"}{coords}), (max @{ $ideogram{"LCB#$block:1"}{coords}) );
+  my $text = `printf "$ideogram{"LCB#$block:1"}{chrom}\t(min @{ $ideogram{"LCB#$block:1"}{coords})\t(max @{ $ideogram{"LCB#$block:1"}{coords})" | bedtools intersect -a $tes_infile1 -b stdin -wa | perl -lane 'if(m/$find\=([\w]+)(\;.+)*/){print join("\t","LCB#$block:1",$F[3],$F[4],$F[2],$1)}'`;
+  print $REPEATS_LCB $text;
 
   ## then do for 'genes2'
   ## ====================
@@ -214,7 +219,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   if (scalar(keys %ideogram) == 2) {
     ## now print the ideogram for each LCB
     foreach (nsort keys %ideogram) {
-      print $IDEOGRAM_LCB join ("\t", $_, ${$ideogram{$_}{coords}}[0], ${$ideogram{$_}{coords}}[-1], $ideogram{$_}{chrom}) . "\n";
+      print $IDEOGRAM_LCB join ("\t", $_, (min @{$ideogram{$_}{coords}}), (max @{$ideogram{$_}{coords}}), $ideogram{$_}{chrom}) . "\n";
     }
   } else {
     print STDERR "[WARN] LCB#$block does not have two chromosomes\n";
