@@ -47,7 +47,7 @@ my (
   $tes_infile2,
   $nnns_infile,
   $coverage_infile,
-  $help, $debug
+  $help, $keep, $debug
 );
 ## defaults
 my $ks_threshold = 0.2;
@@ -62,11 +62,13 @@ GetOptions (
   'f|fasta=s' => \$genome_infile,
   '1|tes1=s' => \$tes_infile1,
   '2|tes2=s' => \$tes_infile2,
-  'n|nnns:s' => \$nnns_infile,
+  'N|Ns:s' => \$nnns_infile,
   'v|coverage:s' => \$coverage_infile,
   'k|ks:f' => \$ks_threshold,
   'd|find:s' => \$find,
+  'b|numticks:i' => \$numticks,
   'o|outprefix:s' => \$outprefix,
+  'a|keep' => \$keep,
   'h|help' => \$help,
   'debug' => \$debug
 );
@@ -291,10 +293,10 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(custom.genome\$name[1],"/",custom.genome\$name[2]))\n";
   my $tick_dist = $numticks / ($range1+$range2/2);
   print $R "kpAddBaseNumbers(kp,tick.dist=$tick_dist, add.units=T, cex = 0.8)\n";
-  print $R "mtext(custom.genome$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
-  print $R "mtext(custom.genome$name[[2]], side=2, outer=T, at=0.2, adj=0, cex=0.75)\n";
+  print $R "mtext(custom.genome\$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
+  print $R "mtext(custom.genome\$name[[2]], side=2, outer=T, at=0.2, adj=0, cex=0.75)\n";
   print $R "kpPlotRegions(kp, data=custom.repeats, r0=0, r1=0.5, col=cols[1], border=cols[1])\n";
-  print $R "kpPlotNames(kp, data=custom.repeats, y0=0.1, y1=0.1, labels=custom.repeats$name[1:9],cex=0.5)\n";
+  print $R "kpPlotNames(kp, data=custom.repeats, y0=0.1, y1=0.1, labels=custom.repeats\$name[1:9],cex=0.5)\n";
 }
 ## close FHs
 close $R;
