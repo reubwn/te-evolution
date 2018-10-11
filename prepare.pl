@@ -67,7 +67,7 @@ GetOptions (
   'd|find:s' => \$find,
   'o|outprefix:s' => \$outprefix,
   'h|help' => \$help,
-  'd|debug' => \$debug
+  'debug' => \$debug
 );
 ## help and usage
 die $usage if $help;
@@ -164,10 +164,10 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   my $end1 = ${ $collinearity_hash{$block}{'genes1'} }[-1];
   print STDERR "[INFO] Start1: $start1\n[INFO] End1: $end1\n";
   ## slice from MCScanX genes file to get coordinates
-  `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
+  # `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
   ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
   my %ideogram;
-  open (my $TMP1, "tmp1") or die $!;
+  open (my $TMP1, "perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile |") or die $!;
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) { ## this prints arbitrarily large blank cytoband for each block for prettier visualisation
@@ -187,28 +187,28 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   close $TMP1;
   ## get TEs that intersect with LCB region using bedtools
   my ($chrom1, $min1, $max1) = ($ideogram{"LCB#$block:1"}{chrom}, (min @{ $ideogram{"LCB#$block:1"}{coords} }), (max @{ $ideogram{"LCB#$block:1"}{coords} }) );
-  eval {
-    no strict;
-    no warnings;
-    my $text = `printf "$chrom1\t$min1\t$max1" | bedtools intersect -a $tes_infile1 -b stdin -wa | perl -lane 'if(m/$find\=([\w]+)(\;.+)*/){print join("\t",$chrom1,$F[3],$F[4],$F[2],$1)}'`;
+  open (my $BED1, "printf '$chrom1\t$min1\t$max1' | bedtools intersect -a $tes_infile1 -b stdin -wa |") or die $!;
+  while (<$BED1>) {
+    my @F = split (/\s+/, $_);
+    print $REPEATS_LCB print join("\t", "LCB#$block:1", $F[3], $F[4], $F[2], $1) . "\n";
   }
-  print $REPEATS_LCB "$text";
-
-# printf $ideogram{LCB\#$block:1}{chrom}\t(min @{ $ideogram{LCB#$block:1}{coords} })\t(max @{ $ideogram{LCB#$block:1}{coords} })
+  close $BED1;
 
   ## then do for 'genes2'
   ## ====================
   my $start2 = ${ $collinearity_hash{$block}{'genes2'} }[0];
   my $end2 = ${ $collinearity_hash{$block}{'genes2'} }[-1];
   ## check orientation of LCB on second strand! (genes1 is always +)
+  my $TMP2;
   if ($scores_hash{$block}{'orientation'} eq "plus") {
-    print STDERR "[INFO] Start2: $start2\n[INFO] End2: $end2\n";
-    `perl -e 'while (<>) {print if (/\Q$start2\E/../\Q$end2\E/)}' $genes_infile > tmp2`;
+    print STDERR "[INFO] Start2: $start2\n[INFO] End2: $end2\n" if $debug;
+    open ($TMP2, "perl -e 'while (<>) {print if (/\Q$start2\E/../\Q$end2\E/)}' $genes_infile |") or die $!;
+    # `perl -e 'while (<>) {print if (/\Q$start2\E/../\Q$end2\E/)}' $genes_infile > tmp2`;
   } else {
-    print STDERR "[INFO] Start2: $end2\n[INFO] End2: $start2\n"; ##switcheroo
-    `perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile > tmp2`;
+    print STDERR "[INFO] Start2: $end2\n[INFO] End2: $start2\n" if $debug; ##switcheroo
+    open ($TMP2, "perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile |") or die $!;
+    # `perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile > tmp2`;
   }
-  open (my $TMP2, "tmp2") or die $!;
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) {
