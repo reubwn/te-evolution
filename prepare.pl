@@ -185,6 +185,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   close $TMP1;
   ## get TEs that intersect with LCB region using bedtools
   my ($chrom1, $min1, $max1) = ($ideogram{"LCB#$block:1"}{chrom}, (min @{ $ideogram{"LCB#$block:1"}{coords} }), (max @{ $ideogram{"LCB#$block:1"}{coords} }) );
+  print STDERR "printf '$chrom1\t$min1\t$max1' | bedtools intersect -a $tes_infile1 -b stdin -wa |" if $debug;
   open (my $BED1, "printf '$chrom1\t$min1\t$max1' | bedtools intersect -a $tes_infile1 -b stdin -wa |") or die $!;
   while (<$BED1>) {
     if (m/$find\=([\w]+)(\;.+)*/) {
@@ -241,7 +242,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
       print $IDEOGRAM_LCB join ("\t", $_, (min @{$ideogram{$_}{coords}}), (max @{$ideogram{$_}{coords}}), $ideogram{$_}{chrom}) . "\n";
       ## debug:
       if ($debug) {
-        print STDERR "\n[DEBUG] $_ ::: $ideogram{$_}{chrom} (min @{$ideogram{$_}{coords}})-(max @{$ideogram{$_}{coords}})\n";
+        print STDERR "[DEBUG] $_ ::: $ideogram{$_}{chrom} ".(min @{$ideogram{$_}{coords}})."-".(max @{$ideogram{$_}{coords}})."\n";
       }
     }
   } else {
