@@ -164,7 +164,7 @@ print $R "## libraries\n";
 print $R "library(karyoploteR)\n";
 print $R "library(viridis)\n";
 print $R "## path to working dir\n";
-print $R "setwd($ENV{PWD})\n";
+print $R "setwd(getwd())\n";
 print $R "## graphics\n";
 print $R "par(mfrow=c(1,1))\n";
 print $R "par(family=\"Ubuntu Light\",ps=12, las=1)\n";
@@ -293,13 +293,14 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $R "cytobands<-toGRanges('$results_dir/$outprefix.cytobands.LCB\#$block.txt')\n";
   print $R "repeats<-toGRanges('$results_dir/$outprefix.repeats.LCB\#$block.txt')\n";
   print $R "\n## plot\n";
-  print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(custom.genome\$name[1],\"/\",custom.genome\$name[2]))\n";
+  my $strand = $scores_hash{$block}{'orientation'};
+  print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(genome\$name[1],\" / \",genome\$name[2]),\" \(\",$strand,\"\)\",sep=\"\")\n";
   my $tick_dist = ($range1+$range2/2) / $numticks;
   print $R "kpAddBaseNumbers(kp,tick.dist=$tick_dist, add.units=T, cex = 0.8)\n";
-  print $R "mtext(custom.genome\$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
-  print $R "mtext(custom.genome\$name[[2]], side=2, outer=T, at=0.2, adj=0, cex=0.75)\n";
-  print $R "kpPlotRegions(kp, data=custom.repeats, r0=0, r1=0.5, col=cols[1], border=cols[1])\n";
-  print $R "kpPlotNames(kp, data=custom.repeats, y0=0.1, y1=0.1, labels=custom.repeats\$name[1:9],cex=0.5)\n";
+  print $R "mtext(genome\$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
+  print $R "mtext(genome\$name[[2]], side=2, outer=T, at=0.2, adj=0, cex=0.75)\n";
+  print $R "kpPlotRegions(kp, data=repeats, r0=0, r1=0.5, col=cols[1], border=cols[1])\n";
+  print $R "kpPlotNames(kp, data=repeats, y0=0.1, y1=0.1, labels=repeats\$name[1:9],cex=0.5)\n";
 }
 ## close FHs
 close $R;
