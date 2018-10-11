@@ -67,7 +67,7 @@ GetOptions (
   'd|find:s' => \$find,
   'o|outprefix:s' => \$outprefix,
   'h|help' => \$help,
-  'debug' => \$debug
+  'x|debug' => \$debug
 );
 ## help and usage
 die $usage if $help;
