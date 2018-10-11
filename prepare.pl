@@ -294,7 +294,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $R "repeats<-toGRanges('$results_dir/$outprefix.repeats.LCB\#$block.txt')\n";
   print $R "\n## plot\n";
   my $strand = $scores_hash{$block}{'orientation'};
-  print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(genome\$name[1],\" / \",genome\$name[2]),\" \(\",$strand,\"\)\",sep=\"\")\n";
+  print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(genome\$name[1],\" / \",genome\$name[2],\" \($strand\)\",sep=\"\"))\n";
   my $tick_dist = ($range1+$range2/2) / $numticks;
   print $R "kpAddBaseNumbers(kp,tick.dist=$tick_dist, add.units=T, cex = 0.8)\n";
   print $R "mtext(genome\$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
