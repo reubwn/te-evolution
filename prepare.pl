@@ -53,6 +53,7 @@ my (
 my $ks_threshold = 0.2;
 my $outprefix = "prepare";
 my $find = "Family";
+my $numticks = 5;
 
 GetOptions (
   'c|collinearity=s' => \$collinearity_infile,
@@ -83,6 +84,16 @@ my (
   %nnns_hash,
   %coverage_hash
 );
+
+my $results_dir = $outprefix."_data";
+if (-d $results_dir) {
+  if ($keep) {
+    die "[ERROR] Dir $results_dir already exists!\n";
+  } else {
+    system ("rm -r $results_dir && mkdir $results_dir");
+  }
+}
+print STDERR "[INFO] Files written to: $results_dir/\n";
 
 ## parse scores file
 my ($total,$skip) = (0,0);
@@ -132,8 +143,8 @@ while ( my $seqobj = $in->next_seq() ) {
 }
 
 ## make ideogram genome file
-open (my $IDEOGRAM_GENOME, ">".$outprefix."_ideogram.genome.txt") or die $!;
-open (my $CYTOBANDS_GENOME, ">".$outprefix."_cytobands.genome.txt") or die $!;
+open (my $IDEOGRAM_GENOME, ">$results_dir/$outprefix.ideogram.genome.txt") or die $!;
+open (my $CYTOBANDS_GENOME, ">$results_dir/$outprefix.cytobands.genome.txt") or die $!;
 print $CYTOBANDS_GENOME join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
 print $IDEOGRAM_GENOME join ("\t", "chr", "start", "end") . "\n";
 foreach (nsort keys %genome_hash) {
@@ -141,21 +152,36 @@ foreach (nsort keys %genome_hash) {
 }
 close $IDEOGRAM_GENOME;
 
-## open cytobands and ideogram LCBs file
-open (my $IDEOGRAM_LCB, ">".$outprefix."_ideogram.LCBs.txt") or die $!;
-open (my $CYTOBANDS_LCB, ">".$outprefix."_cytobands.LCBs.txt") or die $!;
-open (my $REPEATS_LCB, ">".$outprefix."_repeats.LCBs.txt") or die $!;
-print $IDEOGRAM_LCB join ("\t", "chr", "start", "end", "name") . "\n";
-print $CYTOBANDS_LCB join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
-print $REPEATS_LCB join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+## make R file for easy plotting
+open (my $R, "$outprefix.R") or die $!;
+print $R "## `date`\n";
+print $R "## libraries\n";
+print $R "library(karyoploteR)\n";
+print $R "library(viridis)\n";
+print $R "## path to working dir\n";
+print $R "setwd($ENV{PWD})\n";
+print $R "## graphics\n";
+print $R "par(mfrow=c(1,1))\n";
+print $R "par(family=\"Ubuntu Light\",ps=12, las=1)\n";
+print $R "par(mar=c(2,2,0,2), oma=c(4,4,0,4))\n";
+print $R "par(tcl=-0.25)\n";
+print $R "par(mgp=c(2, 0.6, 0))\n";
+print $R "cols<-viridis(5,alpha=1)\n\n";
 
-
+## MAIN BLOCK
+## print consecutively each chr in LCB
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'})"; $|=1;
 
-  ## MAIN BLOCK
-  ## print consecutively each chr in LCB
+  ## open cytobands and ideogram LCBs file
+  open (my $IDEOGRAM_LCB, ">$results_dir/$outprefix.ideogram.LCB\#$block.txt") or die $!;
+  open (my $CYTOBANDS_LCB, ">$results_dir/$outprefix.cytobands.LCB\#$block.txt") or die $!;
+  open (my $REPEATS_LCB, ">$results_dir/$outprefix.repeats.LCB\#$block.txt") or die $!;
+  print $IDEOGRAM_LCB join ("\t", "chr", "start", "end", "name") . "\n";
+  print $CYTOBANDS_LCB join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
+  print $REPEATS_LCB join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+
   ## first do for 'genes1'
   ## =====================
   ## get start and end genes in LCB array
@@ -185,6 +211,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   close $TMP1;
   ## get TEs that intersect with LCB region using bedtools
   my ($chrom1, $min1, $max1) = ($ideogram{"LCB#$block:1"}{chrom}, (min @{ $ideogram{"LCB#$block:1"}{coords} }), (max @{ $ideogram{"LCB#$block:1"}{coords} }) );
+  my $range1 = ($max1 - $min1);
   print STDERR "[DEBUG] Bedtools command: printf '$chrom1\t$min1\t$max1' | bedtools intersect -a $tes_infile1 -b stdin -wa |\n" if $debug;
   open (my $BED1, "printf '$chrom1\t$min1\t$max1' | bedtools intersect -a $tes_infile1 -b stdin -wa |") or die $!;
   while (<$BED1>) {
@@ -225,6 +252,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   }
   close $TMP2;
   my ($chrom2, $min2, $max2) = ($ideogram{"LCB#$block:2"}{chrom}, (min @{ $ideogram{"LCB#$block:2"}{coords} }), (max @{ $ideogram{"LCB#$block:2"}{coords} }) );
+  my $range2 = ($max2 - $min2);
   print STDERR "[DEBUG] Bedtools command: printf '$chrom2\t$min2\t$max2' | bedtools intersect -a $tes_infile2 -b stdin -wa |\n" if $debug;
   open (my $BED2, "printf '$chrom2\t$min2\t$max2' | bedtools intersect -a $tes_infile2 -b stdin -wa |") or die $!;
   while (<$BED2>) {
@@ -249,13 +277,29 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   } else {
     print STDERR "[WARN] LCB#$block does not seem to have two chromosomes?\n";
   }
+  ## close FHs
+  close $IDEOGRAM_LCB;
+  close $CYTOBANDS_LCB;
+  close $REPEATS_LCB;
+
+  ## print commands to R file
+  print $R "\n## load data\n";
+  print $R "genome<-toGRanges('$results_dir/$outprefix.ideogram.LCB\#$block.txt')\n";
+  print $R "cytobands<-toGRanges('$results_dir/$outprefix.cytobands.LCB\#$block.txt')\n";
+  print $R "repeats<-toGRanges('$results_dir/$outprefix.repeats.LCB\#$block.txt')\n";
+  print $R "\n## plot\n";
+  print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(custom.genome\$name[1],"/",custom.genome\$name[2]))\n";
+  my $tick_dist = $numticks / ($range1+$range2/2);
+  print $R "kpAddBaseNumbers(kp,tick.dist=$tick_dist, add.units=T, cex = 0.8)\n";
+  print $R "mtext(custom.genome$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
+  print $R "mtext(custom.genome$name[[2]], side=2, outer=T, at=0.2, adj=0, cex=0.75)\n";
+  print $R "kpPlotRegions(kp, data=custom.repeats, r0=0, r1=0.5, col=cols[1], border=cols[1])\n";
+  print $R "kpPlotNames(kp, data=custom.repeats, y0=0.1, y1=0.1, labels=custom.repeats$name[1:9],cex=0.5)\n";
 }
-## close fhs
-close $IDEOGRAM_GENOME;
+## close FHs
+close $R;
 close $CYTOBANDS_GENOME;
-close $IDEOGRAM_LCB;
-close $CYTOBANDS_LCB;
-close $REPEATS_LCB;
+
 
 ######################## SUBS
 
