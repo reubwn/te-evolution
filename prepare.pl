@@ -189,8 +189,10 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   my ($chrom1, $min1, $max1) = ($ideogram{"LCB#$block:1"}{chrom}, (min @{ $ideogram{"LCB#$block:1"}{coords} }), (max @{ $ideogram{"LCB#$block:1"}{coords} }) );
   open (my $BED1, "printf '$chrom1\t$min1\t$max1' | bedtools intersect -a $tes_infile1 -b stdin -wa |") or die $!;
   while (<$BED1>) {
-    my @F = split (/\s+/, $_);
-    print $REPEATS_LCB print join("\t", "LCB#$block:1", $F[3], $F[4], $F[2], $1) . "\n";
+    if (m/$find\=([\w]+)(\;.+)*/) {
+      my @F = split (/\s+/, $_);
+      print $REPEATS_LCB join("\t", "LCB#$block:1", $F[3], $F[4], $F[2], $1) . "\n";
+    }
   }
   close $BED1;
 
