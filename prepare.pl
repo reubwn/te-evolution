@@ -30,7 +30,7 @@ OPTIONS
   -v|--coverage     [FILE]   : coverage annotation file [!!TODO]
   -k|--ks           [FLOAT]  : Ks threshold to filter LCBs [0.2]
   -d|--find         [STRING] : Search string to grep TE id from GFF file [Family]
-  -o|--out          [STRING] : Output filename
+  -o|--out          [STRING] : Prefix for outfiles
   -h|--help                  : this message
 [*] Required input
 
@@ -59,15 +59,15 @@ GetOptions (
   's|score=s' => \$score_infile,
   'g|genes=s' => \$genes_infile,
   'f|fasta=s' => \$genome_infile,
-  't|tes1=s' => \$tes_infile1,
-  'T|tes2:s' => \$tes_infile2,
+  'tes1=s' => \$tes_infile1,
+  'tes2:s' => \$tes_infile2,
   'n|nnns:s' => \$nnns_infile,
   'v|coverage:s' => \$coverage_infile,
   'k|ks:f' => \$ks_threshold,
   'd|find:s' => \$find,
   'o|outprefix:s' => \$outprefix,
   'h|help' => \$help,
-  'x|debug' => \$debug
+  'debug' => \$debug
 );
 ## help and usage
 die $usage if $help;
