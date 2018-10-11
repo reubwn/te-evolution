@@ -136,8 +136,11 @@ close $IDEOGRAM_GENOME;
 ## open cytobands and ideogram LCBs file
 open (my $IDEOGRAM_LCB, ">".$outprefix."_ideogram.LCBs.txt") or die $!;
 open (my $CYTOBANDS_LCB, ">".$outprefix."_cytobands.LCBs.txt") or die $!;
-print $IDEOGRAM_LCB join ("\t", "chr", "start", "end") . "\n";
+open (my $CYTOBANDS_GENES, ">".$outprefix."_cytobands.genes.txt") or die $!;
+open (my $REGIONS_REPEATS, ">".$outprefix."_regions.repeats.txt") or die $!;
+print $IDEOGRAM_LCB join ("\t", "chr", "start", "end", "name") . "\n";
 print $CYTOBANDS_LCB join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
+print $CYTOBANDS_GENES join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
 
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
@@ -156,25 +159,22 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
   ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
   my %ideogram;
-  # my @coordinates1;
   open (my $TMP1, "tmp1") or die $!;
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
-    if ($. == 1) {
-      # print $IDEOGRAM_LCB "$F[0]\t";
-      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), -1e+5, 1e+5, "background", "gneg") . "\n"; ##print arbitrarily large blank cytoband for each block for visualisation
+    if ($. == 1) { ## this prints arbitrarily large blank cytoband for each block for prettier visualisation
+      print $CYTOBANDS_GENES join ("\t", "LCB#$block:1", -1e+5, 1e+5, "background", "gneg") . "\n";
     }
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
-      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $CYTOBANDS_GENES join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
-      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
+      print $CYTOBANDS_GENES join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
     ## get all coords of all genes in region
-    push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[2]); ##key=LCB#_chrom; val=@{array of start-end coordinates}
-    push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[3]);
-    # push (@coordinates1, $F[2]);
-    # push (@coordinates1, $F[3]);
+    $ideogram{"LCB#$block:1"}{chrom} = $F[0]; ##key=LCB##:1; val=chrom
+    push ( @{ $ideogram{"LCB#$block:1"} }{coords}, $F[2] ); ##key=LCB##:1; val=@{array of start-end coordinates}
+    push ( @{ $ideogram{"LCB#$block:1"} }{coords}, $F[3] );
   }
   close $TMP1;
   # @coordinates1 = sort {$a<=>$b} @coordinates1;
@@ -193,31 +193,31 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     print STDERR "[INFO] Start2: $end2\n[INFO] End2: $start2\n"; ##switcheroo
     `perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile > tmp2`;
   }
-  # my @coordinates2;
   open (my $TMP2, "tmp2") or die $!;
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) {
-      # print $IDEOGRAM_LCB "$F[0]\t";
-      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), -1e+5, 1e+5, "background", "gneg") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", -1e+5, 1e+5, "background", "gneg") . "\n";
     }
     if ($genes_hash{$F[1]}) {
-      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
-      print $CYTOBANDS_LCB join ("\t", join("_","LCB$block",$F[0]), $F[2], $F[3], $F[1], "gpos25") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
-    push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[2]);
-    push (@{$ideogram{join("_","LCB$block",$F[0])}}, $F[3]);
-    # push (@coordinates2, $F[2]);
-    # push (@coordinates2, $F[3]);
+    $ideogram{"LCB#$block:2"}{chrom} = $F[0]; ##
+    push ( @{ $ideogram{"LCB#$block:2"} }{coords}, $F[2] );
+    push ( @{ $ideogram{"LCB#$block:2"} }{coords}, $F[3] );
   }
   close $TMP2;
-  # @coordinates2 = sort {$a<=>$b} @coordinates2;
-  # print $IDEOGRAM_LCB join ("\t", $coordinates2[0], $coordinates2[-1]) . "\n";
-  foreach (nsort keys %ideogram) {
-    print $IDEOGRAM_LCB join ("\t", $_, ${$ideogram{$_}}[0], ${$ideogram{$_}}[-1]) . "\n";
+  ## check there are 2 chroms in %ideogram
+  if (scalar(keys %ideogram) != 2) {
+    ## now print the ideogram for each LCB
+    foreach (nsort keys %ideogram) {
+      print $IDEOGRAM_LCB join ("\t", $_, ${$ideogram{$_}}{coords}[0], ${$ideogram{$_}}{coords}[-1], $ideogram{$_}{chrom}) . "\n";
+    }
+  } else {
+    print STDERR "[WARN] "
   }
-
 }
 close $IDEOGRAM_LCB;
 close $CYTOBANDS_LCB;
