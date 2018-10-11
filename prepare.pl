@@ -102,7 +102,7 @@ while (<$SCORES>) {
 }
 close $SCORES;
 print STDERR "[INFO] Scores file: $score_infile\n";
-print STDERR "[INFO] Number of LCBs passing Ks threshold (<= $ks_threshold): ".(scalar(keys %scores_hash))."\n";
+print STDERR "[INFO] Number of LCBs passing Ks threshold (<=$ks_threshold): ".commify(scalar(keys %scores_hash))."\n";
 
 ## parse collinearity file
 print STDERR "[INFO] MCScanX collinearity file: $collinearity_infile\n";
@@ -123,7 +123,7 @@ while (<$COLL>) {
   }
 }
 close $COLL;
-print STDERR "[INFO] Number of genes in LCBs: ".scalar(keys %genes_hash)."\n";
+print STDERR "[INFO] Number of genes in LCBs: ".commify(scalar(keys %genes_hash))."\n";
 
 ## parse genome fasta file
 my $in = Bio::SeqIO -> new( -file => $genome_infile, -format => "fasta" );
@@ -170,7 +170,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) { ## this prints arbitrarily large blank cytoband for each block for prettier visualisation
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", -1e+5, 1e+5, "background", "gneg") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", -1e+9, 1e+9, "background", "gneg") . "\n";
     }
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
@@ -211,7 +211,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) {
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", -1e+5, 1e+5, "background", "gneg") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", -1e+9, 1e+9, "background", "gneg") . "\n";
     }
     if ($genes_hash{$F[1]}) {
       print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk") . "\n";
@@ -251,5 +251,12 @@ close $IDEOGRAM_LCB;
 close $CYTOBANDS_LCB;
 close $REPEATS_LCB;
 
+######################## SUBS
+
+sub commify {
+  my $text = reverse $_[0];
+  $text =~ s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
+  return scalar reverse $text;
+}
 
 __END__
