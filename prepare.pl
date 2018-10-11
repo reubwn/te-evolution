@@ -187,7 +187,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   close $TMP1;
   ## get TEs that intersect with LCB region using bedtools
   my ($chrom1, $min1, $max1) = ($ideogram{"LCB#$block:1"}{chrom}, (min @{ $ideogram{"LCB#$block:1"}{coords} }), (max @{ $ideogram{"LCB#$block:1"}{coords} }) );
-  my $text = `printf "$chrom1\t$min1\t$max1" | bedtools intersect -a $tes_infile1 -b stdin -wa | perl -lane 'if(m/$find\=([\w]+)(\;.+)*/){print join("\t",$chrom1,$F[3],$F[4],$F[2],$1)}'`;
+  eval { my $text = `printf "$chrom1\t$min1\t$max1" | bedtools intersect -a $tes_infile1 -b stdin -wa | perl -lane 'if(m/$find\=([\w]+)(\;.+)*/){print join("\t",$chrom1,$F[3],$F[4],$F[2],$1)}'` };
   print $REPEATS_LCB "$text";
 
 # printf $ideogram{LCB\#$block:1}{chrom}\t(min @{ $ideogram{LCB#$block:1}{coords} })\t(max @{ $ideogram{LCB#$block:1}{coords} })
