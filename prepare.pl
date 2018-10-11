@@ -300,7 +300,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $R "mtext(genome\$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
   print $R "mtext(genome\$name[[2]], side=2, outer=T, at=0.2, adj=0, cex=0.75)\n";
   print $R "kpPlotRegions(kp, data=repeats, r0=0, r1=0.5, col=cols[1], border=cols[1])\n";
-  print $R "kpPlotNames(kp, data=repeats, y0=0.1, y1=0.1, labels=repeats\$name[1:9],cex=0.5)\n";
+  print $R "kpPlotNames(kp, data=repeats, y0=0.1, y1=0.1, labels=repeats\$name,cex=0.5)\n";
 }
 ## close FHs
 close $R;
