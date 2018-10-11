@@ -161,7 +161,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get start and end genes in LCB array
   my $start1 = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end1 = ${ $collinearity_hash{$block}{'genes1'} }[-1];
-  print STDERR "[INFO] Start1: $start1\n[INFO] End1: $end1\n" if $debug;
+  print STDERR "\n[INFO] Start1: $start1\n[INFO] End1: $end1\n" if $debug;
   ## slice from MCScanX genes file to get coordinates
   # `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
   ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
