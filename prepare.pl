@@ -288,7 +288,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   close $REPEATS_LCB;
 
   ## print commands to R file
-  print $R "\n## load data\n";
+  print $R "\n## load data for LCB\#$block\n";
   print $R "genome<-toGRanges('$results_dir/$outprefix.ideogram.LCB\#$block.txt')\n";
   print $R "cytobands<-toGRanges('$results_dir/$outprefix.cytobands.LCB\#$block.txt')\n";
   print $R "repeats<-toGRanges('$results_dir/$outprefix.repeats.LCB\#$block.txt')\n";
