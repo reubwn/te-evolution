@@ -210,13 +210,13 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   }
   close $TMP2;
   ## check there are 2 chroms in %ideogram
-  if (scalar(keys %ideogram) != 2) {
+  if (scalar(keys %ideogram) == 2) {
     ## now print the ideogram for each LCB
     foreach (nsort keys %ideogram) {
-      print $IDEOGRAM_LCB join ("\t", $_, ${$ideogram{$_}}{coords}[0], ${$ideogram{$_}}{coords}[-1], $ideogram{$_}{chrom}) . "\n";
+      print $IDEOGRAM_LCB join ("\t", $_, ${$ideogram{$_}{coords}}[0], ${$ideogram{$_}{coords}}[-1], $ideogram{$_}{chrom}) . "\n";
     }
   } else {
-    print STDERR "[WARN] "
+    print STDERR "[WARN] LCB#$block does not have two chromosomes\n";
   }
 }
 close $IDEOGRAM_LCB;
