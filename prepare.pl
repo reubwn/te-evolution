@@ -152,8 +152,7 @@ print $REPEATS_LCB join ("\t", "chr", "start", "end", "strand", "name") . "\n";
 
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
-  print STDERR "[INFO] Block number: $block\n";
-  print STDERR "[INFO] LCB orientation: $scores_hash{$block}{'orientation'}\n";
+  print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'})"; $|=1;
 
   ## MAIN BLOCK
   ## print consecutively each chr in LCB
@@ -162,7 +161,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get start and end genes in LCB array
   my $start1 = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end1 = ${ $collinearity_hash{$block}{'genes1'} }[-1];
-  print STDERR "[INFO] Start1: $start1\n[INFO] End1: $end1\n";
+  print STDERR "[INFO] Start1: $start1\n[INFO] End1: $end1\n" if $debug;
   ## slice from MCScanX genes file to get coordinates
   # `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
   ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
@@ -205,11 +204,9 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   if ($scores_hash{$block}{'orientation'} eq "plus") {
     print STDERR "[INFO] Start2: $start2\n[INFO] End2: $end2\n" if $debug;
     open ($TMP2, "perl -e 'while (<>) {print if (/\Q$start2\E/../\Q$end2\E/)}' $genes_infile |") or die $!;
-    # `perl -e 'while (<>) {print if (/\Q$start2\E/../\Q$end2\E/)}' $genes_infile > tmp2`;
   } else {
     print STDERR "[INFO] Start2: $end2\n[INFO] End2: $start2\n" if $debug; ##switcheroo
     open ($TMP2, "perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile |") or die $!;
-    # `perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile > tmp2`;
   }
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
@@ -226,6 +223,17 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     push ( @{ $ideogram{"LCB#$block:2"}{coords} }, $F[3] );
   }
   close $TMP2;
+  my ($chrom2, $min2, $max2) = ($ideogram{"LCB#$block:2"}{chrom}, (min @{ $ideogram{"LCB#$block:2"}{coords} }), (max @{ $ideogram{"LCB#$block:2"}{coords} }) );
+  open (my $BED2, "printf '$chrom2\t$min2\t$max2' | bedtools intersect -a $tes_infile2 -b stdin -wa |") or die $!;
+  while (<$BED2>) {
+    if (m/$find\=([\w]+)(\;.+)*/) {
+      my @F = split (/\s+/, $_);
+      print $REPEATS_LCB join("\t", "LCB#$block:2", $F[3], $F[4], $F[2], $1) . "\n";
+    }
+  }
+  close $BED2;
+
+  ## now print LCB ideogram file
   ## check there are 2 chroms in %ideogram
   if (scalar(keys %ideogram) == 2) {
     ## now print the ideogram for each LCB
@@ -233,7 +241,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
       print $IDEOGRAM_LCB join ("\t", $_, (min @{$ideogram{$_}{coords}}), (max @{$ideogram{$_}{coords}}), $ideogram{$_}{chrom}) . "\n";
     }
   } else {
-    print STDERR "[WARN] LCB#$block does not have two chromosomes\n";
+    print STDERR "[WARN] LCB#$block does not seem to have two chromosomes?\n";
   }
 }
 ## close fhs
