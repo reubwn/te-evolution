@@ -197,12 +197,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) {
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", -1e+5, 1e+5, "background", "gneg") . "\n";
+      print $CYTOBANDS_GENES join ("\t", "LCB#$block:2", -1e+5, 1e+5, "background", "gneg") . "\n";
     }
     if ($genes_hash{$F[1]}) {
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $CYTOBANDS_GENES join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
+      print $CYTOBANDS_GENES join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
     $ideogram{"LCB#$block:2"}{chrom} = $F[0]; ##
     push ( @{ $ideogram{"LCB#$block:2"}{coords} }, $F[2] );
@@ -220,7 +220,10 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   }
 }
 close $IDEOGRAM_LCB;
+close $IDEOGRAM_GENOME;
 close $CYTOBANDS_LCB;
+close $CYTOBANDS_GENES;
+close $REGIONS_REPEATS;
 
 
 __END__
