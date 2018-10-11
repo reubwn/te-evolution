@@ -94,6 +94,8 @@ if (-d $results_dir) {
   } else {
     system ("rm -r $results_dir && mkdir $results_dir");
   }
+} else {
+  system ("mkdir $results_dir");
 }
 print STDERR "[INFO] Files written to: $results_dir/\n";
 
