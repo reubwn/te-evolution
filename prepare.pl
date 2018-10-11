@@ -127,6 +127,8 @@ while ( my $seqobj = $in->next_seq() ) {
 
 ## make ideogram genome file
 open (my $IDEOGRAM_GENOME, ">".$outprefix."_ideogram.genome.txt") or die $!;
+open (my $CYTOBANDS_GENOME, ">".$outprefix."_cytobands.genome.txt") or die $!;
+print $CYTOBANDS_GENOME join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
 print $IDEOGRAM_GENOME join ("\t", "chr", "start", "end") . "\n";
 foreach (nsort keys %genome_hash) {
   print $IDEOGRAM_GENOME join ("\t", $_, "1", $genome_hash{$_}) . "\n";
@@ -136,11 +138,10 @@ close $IDEOGRAM_GENOME;
 ## open cytobands and ideogram LCBs file
 open (my $IDEOGRAM_LCB, ">".$outprefix."_ideogram.LCBs.txt") or die $!;
 open (my $CYTOBANDS_LCB, ">".$outprefix."_cytobands.LCBs.txt") or die $!;
-open (my $CYTOBANDS_GENES, ">".$outprefix."_cytobands.genes.txt") or die $!;
-open (my $REGIONS_REPEATS, ">".$outprefix."_regions.repeats.txt") or die $!;
+open (my $REPEATS_LCB, ">".$outprefix."_repeats.LCBs.txt") or die $!;
 print $IDEOGRAM_LCB join ("\t", "chr", "start", "end", "name") . "\n";
 print $CYTOBANDS_LCB join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
-print $CYTOBANDS_GENES join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
+
 
 ## process $collinearity_hash
 foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
@@ -163,13 +164,13 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) { ## this prints arbitrarily large blank cytoband for each block for prettier visualisation
-      print $CYTOBANDS_GENES join ("\t", "LCB#$block:1", -1e+5, 1e+5, "background", "gneg") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", -1e+5, 1e+5, "background", "gneg") . "\n";
     }
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
-      print $CYTOBANDS_GENES join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
-      print $CYTOBANDS_GENES join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "gpos25") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
     ## get all coords of all genes in region
     $ideogram{"LCB#$block:1"}{chrom} = $F[0]; ##key=LCB##:1; val=chrom
@@ -197,12 +198,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
     if ($. == 1) {
-      print $CYTOBANDS_GENES join ("\t", "LCB#$block:2", -1e+5, 1e+5, "background", "gneg") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", -1e+5, 1e+5, "background", "gneg") . "\n";
     }
     if ($genes_hash{$F[1]}) {
-      print $CYTOBANDS_GENES join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk") . "\n";
     } else {
-      print $CYTOBANDS_GENES join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
+      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
     $ideogram{"LCB#$block:2"}{chrom} = $F[0]; ##
     push ( @{ $ideogram{"LCB#$block:2"}{coords} }, $F[2] );
@@ -219,11 +220,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     print STDERR "[WARN] LCB#$block does not have two chromosomes\n";
   }
 }
-close $IDEOGRAM_LCB;
+## close fhs
 close $IDEOGRAM_GENOME;
+close $CYTOBANDS_GENOME;
+close $IDEOGRAM_LCB;
 close $CYTOBANDS_LCB;
-close $CYTOBANDS_GENES;
-close $REGIONS_REPEATS;
+close $REPEATS_LCB;
 
 
 __END__
