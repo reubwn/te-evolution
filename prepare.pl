@@ -71,7 +71,7 @@ GetOptions (
 );
 ## help and usage
 die $usage if $help;
-die $usage unless ($collinearity_infile && $score_infile && $genes_infile && $genome_infile && $tes_infile);
+die $usage unless ($collinearity_infile && $score_infile && $genes_infile && $genome_infile && $tes_infile1);
 
 ## stuff
 my (
@@ -188,7 +188,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get TEs that intersect with LCB region using bedtools
   my ($min, $max) = ( (min @{ $ideogram{"LCB#$block:1"}{coords}), (max @{ $ideogram{"LCB#$block:1"}{coords}) );
   my $text = `printf "$ideogram{"LCB#$block:1"}{chrom}\t(min @{ $ideogram{"LCB#$block:1"}{coords})\t(max @{ $ideogram{"LCB#$block:1"}{coords})" | bedtools intersect -a $tes_infile1 -b stdin -wa | perl -lane 'if(m/$find\=([\w]+)(\;.+)*/){print join("\t","LCB#$block:1",$F[3],$F[4],$F[2],$1)}'`;
-  print $REPEATS_LCB $text;
+  print $REPEATS_LCB "$text";
 
   ## then do for 'genes2'
   ## ====================
