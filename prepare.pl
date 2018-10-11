@@ -144,7 +144,7 @@ open (my $CYTOBANDS_LCB, ">".$outprefix."_cytobands.LCBs.txt") or die $!;
 open (my $REPEATS_LCB, ">".$outprefix."_repeats.LCBs.txt") or die $!;
 print $IDEOGRAM_LCB join ("\t", "chr", "start", "end", "name") . "\n";
 print $CYTOBANDS_LCB join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
-print $REPEATS_LCB join ("\t", "chr", "start", "end", "strand", "name")};
+print $REPEATS_LCB join ("\t", "chr", "start", "end", "strand", "name") . "\n";
 
 
 ## process $collinearity_hash
