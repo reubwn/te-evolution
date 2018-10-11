@@ -292,7 +292,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $R "cytobands<-toGRanges('$results_dir/$outprefix.cytobands.LCB\#$block.txt')\n";
   print $R "repeats<-toGRanges('$results_dir/$outprefix.repeats.LCB\#$block.txt')\n";
   print $R "\n## plot\n";
-  print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(custom.genome\$name[1],"/",custom.genome\$name[2]))\n";
+  print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(custom.genome\$name[1],\"/\",custom.genome\$name[2]))\n";
   my $tick_dist = $numticks / ($range1+$range2/2);
   print $R "kpAddBaseNumbers(kp,tick.dist=$tick_dist, add.units=T, cex = 0.8)\n";
   print $R "mtext(custom.genome\$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
