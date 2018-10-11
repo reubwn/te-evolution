@@ -24,11 +24,12 @@ OPTIONS
   -s|--score        [FILE]   : MCScanX score file [*]
   -g|--genes        [FILE]   : MCScanX genes annotation file [*]
   -f|--fasta        [FILE]   : Genome fasta file [*]
-  -t|--tes1          [FILE]   : TE annotation file (species 1) (GFF3) [*]
+  -t|--tes1         [FILE]   : TE annotation file (species 1) (GFF3) [*]
   -T|--tes2         [FILE]   : TE annotation file (species 1) (GFF3)
   -n|--nnns         [FILE]   : NNNs annotation file (GFF3) [!!TODO]
   -v|--coverage     [FILE]   : coverage annotation file [!!TODO]
-  -k|--ks           [FLOAT]  : Ks threshold to filter LCBs
+  -k|--ks           [FLOAT]  : Ks threshold to filter LCBs [0.2]
+  -d|--find         [STRING] : Search string to grep TE id from GFF file [Family]
   -o|--out          [STRING] : Output filename
   -h|--help                  : this message
 [*] Required input
@@ -51,6 +52,7 @@ my (
 ## defaults
 my $ks_threshold = 0.2;
 my $outprefix = "prepare";
+my $find = "Family";
 
 GetOptions (
   'c|collinearity=s' => \$collinearity_infile,
@@ -62,6 +64,7 @@ GetOptions (
   'n|nnns:s' => \$nnns_infile,
   'v|coverage:s' => \$coverage_infile,
   'k|ks:f' => \$ks_threshold,
+  'd|find:s' => \$find,
   'o|outprefix:s' => \$outprefix,
   'h|help' => \$help,
   'd|debug' => \$debug
