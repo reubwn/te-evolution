@@ -157,7 +157,7 @@ foreach (nsort keys %genome_hash) {
 close $IDEOGRAM_GENOME;
 
 ## make R file for easy plotting
-open (my $R, "$outprefix.R") or die $!;
+open (my $R, ">$outprefix.R") or die $!;
 print $R "## `date`\n";
 print $R "## libraries\n";
 print $R "library(karyoploteR)\n";
