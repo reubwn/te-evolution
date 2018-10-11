@@ -161,7 +161,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get start and end genes in LCB array
   my $start1 = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end1 = ${ $collinearity_hash{$block}{'genes1'} }[-1];
-  print STDERR "[DEBUG] LCB#$block:1 ::: $start1-$end1\n" if $debug;
+  print STDERR "\n[DEBUG] LCB#$block:1 ::: $start1-$end1\n" if $debug;
 
   ## slice from MCScanX genes file to get coordinates
   my %ideogram;
