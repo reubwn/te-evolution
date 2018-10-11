@@ -161,10 +161,9 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get start and end genes in LCB array
   my $start1 = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end1 = ${ $collinearity_hash{$block}{'genes1'} }[-1];
-  print STDERR "\n[INFO] Start1: $start1\n[INFO] End1: $end1\n" if $debug;
+  print STDERR "[DEBUG] LCB#$block:1 ::: $start1-$end1\n" if $debug;
+
   ## slice from MCScanX genes file to get coordinates
-  # `perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile > tmp1`;
-  ## parse tmp file to get LCB coords as ideogram and gene coords as cytobands
   my %ideogram;
   open (my $TMP1, "perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile |") or die $!;
   while (<$TMP1>) {
@@ -202,11 +201,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## check orientation of LCB on second strand! (genes1 is always +)
   my $TMP2;
   if ($scores_hash{$block}{'orientation'} eq "plus") {
-    print STDERR "[INFO] Start2: $start2\n[INFO] End2: $end2\n" if $debug;
     open ($TMP2, "perl -e 'while (<>) {print if (/\Q$start2\E/../\Q$end2\E/)}' $genes_infile |") or die $!;
+    print STDERR "[DEBUG] LCB#$block:2 ::: $start2-$end2\n" if $debug;
   } else {
-    print STDERR "[INFO] Start2: $end2\n[INFO] End2: $start2\n" if $debug; ##switcheroo
+    ## switcheroo
     open ($TMP2, "perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile |") or die $!;
+    print STDERR "[DEBUG] LCB#$block:2 ::: $end2-$start2\n" if $debug;
   }
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
@@ -239,6 +239,10 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     ## now print the ideogram for each LCB
     foreach (nsort keys %ideogram) {
       print $IDEOGRAM_LCB join ("\t", $_, (min @{$ideogram{$_}{coords}}), (max @{$ideogram{$_}{coords}}), $ideogram{$_}{chrom}) . "\n";
+      ## debug:
+      if ($debug) {
+        print STDERR "\n[DEBUG] $_ ::: $ideogram{$_}{chrom} (min @{$ideogram{$_}{coords}})-(max @{$ideogram{$_}{coords}})\n";
+      }
     }
   } else {
     print STDERR "[WARN] LCB#$block does not seem to have two chromosomes?\n";
