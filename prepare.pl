@@ -147,8 +147,8 @@ while ( my $seqobj = $in->next_seq() ) {
 }
 
 ## make ideogram genome file
-open (my $IDEOGRAM_GENOME, ">$results_dir/$outprefix.ideogram.genome.txt") or die $!;
-open (my $CYTOBANDS_GENOME, ">$results_dir/$outprefix.cytobands.genome.txt") or die $!;
+open (my $IDEOGRAM_GENOME, ">$results_dir/$outprefix"."_"."genome.ideogram") or die $!;
+open (my $CYTOBANDS_GENOME, ">$results_dir/$outprefix"."_"."genome.cytobands") or die $!;
 print $CYTOBANDS_GENOME join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
 print $IDEOGRAM_GENOME join ("\t", "chr", "start", "end") . "\n";
 foreach (nsort keys %genome_hash) {
@@ -180,11 +180,15 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'})"; $|=1;
 
   ## open cytobands and ideogram LCBs file
-  open (my $IDEOGRAM_LCB, ">$results_dir/$outprefix.ideogram.LCB\#$block.txt") or die $!;
-  open (my $CYTOBANDS_LCB, ">$results_dir/$outprefix.cytobands.LCB\#$block.txt") or die $!;
-  open (my $REPEATS_LCB, ">$results_dir/$outprefix.repeats.LCB\#$block.txt") or die $!;
+  open (my $IDEOGRAM_LCB, ">$results_dir/$outprefix"."_"."LCB\#$block.ideogram") or die $!;
+  open (my $CYTOBANDS_LCB, ">$results_dir/$outprefix"."_"."LCB\#$block.cytobands") or die $!;
+  open (my $LINKS_S_LCB, ">$results_dir/$outprefix"."_"."LCB\#$block.starts") or die $!;
+  open (my $LINKS_E_LCB, ">$results_dir/$outprefix"."_"."LCB\#$block.ends") or die $!;
+  open (my $REPEATS_LCB, ">$results_dir/$outprefix"."_"."LCB\#$block.repeats") or die $!;
   print $IDEOGRAM_LCB join ("\t", "chr", "start", "end", "name") . "\n";
   print $CYTOBANDS_LCB join ("\t", "chr", "start", "end", "name", "gieStain") . "\n";
+  print $LINKS_S_LCB join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+  print $LINKS_E_LCB join ("\t", "chr", "start", "end", "strand", "name") . "\n";
   print $REPEATS_LCB join ("\t", "chr", "start", "end", "strand", "name") . "\n";
 
   ## first do for 'genes1'
@@ -205,6 +209,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
       print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $LINKS_S_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], "+", $F[1]) . "\n";
     } else {
       print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
@@ -238,6 +243,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     print STDERR "[DEBUG] LCB#$block:2 ::: $start2-$end2\n" if $debug;
   } else {
     ## switcheroo
+    ## note this still prints the genes in forwards orientation, ie the LCB is plotted on opposite strands
     open ($TMP2, "perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile |") or die $!;
     print STDERR "[DEBUG] LCB#$block:2 ::: $end2-$start2\n" if $debug;
   }
@@ -248,6 +254,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     }
     if ($genes_hash{$F[1]}) {
       print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk") . "\n";
+      print $LINKS_E_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], "+", $F[1]) . "\n"; ##the strand '+' here is a bit arbitrary...
     } else {
       print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
@@ -286,19 +293,24 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   close $IDEOGRAM_LCB;
   close $CYTOBANDS_LCB;
   close $REPEATS_LCB;
+  close $LINKS_S_LCB;
+  close $LINKS_E_LCB;
 
   ## print commands to R file
   print $R "\n## load data for LCB\#$block\n";
-  print $R "genome<-toGRanges('$results_dir/$outprefix.ideogram.LCB\#$block.txt')\n";
-  print $R "cytobands<-toGRanges('$results_dir/$outprefix.cytobands.LCB\#$block.txt')\n";
-  print $R "repeats<-toGRanges('$results_dir/$outprefix.repeats.LCB\#$block.txt')\n";
-  print $R "\n## plot\n";
+  print $R "genome<-toGRanges('$results_dir/$outprefix\_LCB\#$block.ideogram')\n";
+  print $R "cytobands<-toGRanges('$results_dir/$outprefix\_LCB\#$block.cytobands')\n";
+  print $R "repeats<-toGRanges('$results_dir/$outprefix\_LCB\#$block.repeats')\n";
+  print $R "starts<-toGRanges('$results_dir/$outprefix\_LCB\#$block.starts')\n";
+  print $R "ends<-toGRanges('$results_dir/$outprefix\_LCB\#$block.ends')\n";
+  print $R "## plot\n";
   my $strand = $scores_hash{$block}{'orientation'};
   print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(genome\$name[1],\" / \",genome\$name[2],\" \($strand\)\",sep=\"\"))\n";
   my $tick_dist = ($range1+$range2/2) / $numticks;
   print $R "kpAddBaseNumbers(kp,tick.dist=$tick_dist, add.units=T, cex = 0.8)\n";
   print $R "mtext(genome\$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
   print $R "mtext(genome\$name[[2]], side=2, outer=T, at=0.2, adj=0, cex=0.75)\n";
+  print $R "kpPlotLinks(kp, data=starts, data2=ends, col='grey95')\n";
   print $R "kpPlotRegions(kp, data=repeats, r0=0, r1=0.5, col=cols[1], border=cols[1])\n";
   print $R "kpPlotNames(kp, data=repeats, y0=0.1, y1=0.1, labels=repeats\$name,cex=0.5)\n";
 }
