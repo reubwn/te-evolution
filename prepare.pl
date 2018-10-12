@@ -196,6 +196,8 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get start and end genes in LCB array
   my $start1 = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end1 = ${ $collinearity_hash{$block}{'genes1'} }[-1];
+  my (@cytobands_array, @linkstarts_array);
+  ## debug
   print STDERR "\n[DEBUG] LCB#$block:1 ::: $start1-$end1\n" if $debug;
 
   ## slice from MCScanX genes file to get coordinates
@@ -203,25 +205,39 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   open (my $TMP1, "perl -e 'while (<>) {print if (/\Q$start1\E/../\Q$end1\E/)}' $genes_infile |") or die $!;
   while (<$TMP1>) {
     my @F = split (m/\s+/, $_);
-    if ($. == 1) { ## this prints arbitrarily large blank cytoband for each block for prettier visualisation
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", -1e+9, 1e+9, "background", "gneg") . "\n";
-    }
+    my ($cytoband, $link_start);
+    # if ($. == 1) { ## this prints arbitrarily large blank cytoband for each block for prettier visualisation
+    #   print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", -1e+9, 1e+9, "background", "gneg") . "\n";
+    # }
     ## print genes to cytobands file
     if ($genes_hash{$F[1]}) { ##gene is part of LCB
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "stalk") . "\n";
-      print $LINKS_S_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], "+", $F[1]) . "\n";
+      $cytoband = join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "stalk");
+      $link_start = join ("\t", "LCB#$block:1", $F[2], $F[3], "+", $F[1]);
+      # print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "stalk") . "\n";
+      # print $LINKS_S_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], "+", $F[1]) . "\n";
     } else {
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "gpos25") . "\n";
+      $cytoband = join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "gpos25");
+      # print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
+    push (@cytobands_array, $cytoband);
+    push (@linkstarts_array, $link_start);
     ## get all coords of all genes in region
     $ideogram{"LCB#$block:1"}{chrom} = $F[0]; ##key=LCB##:1; val=chrom
     push ( @{ $ideogram{"LCB#$block:1"}{coords} }, $F[2] ); ##key=LCB##:1; val=@{array of start-end coordinates}
     push ( @{ $ideogram{"LCB#$block:1"}{coords} }, $F[3] );
   }
   close $TMP1;
-  ## get TEs that intersect with LCB region using bedtools
+
+  ## get min max and range of coords
   my ($chrom1, $min1, $max1) = ($ideogram{"LCB#$block:1"}{chrom}, (min @{ $ideogram{"LCB#$block:1"}{coords} }), (max @{ $ideogram{"LCB#$block:1"}{coords} }) );
   my $range1 = ($max1 - $min1);
+
+  ## print cytobands and links files
+  print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $min1, $max1, "background", "gneg") . "\n"; ## print background blank band
+  print $CYTOBANDS_LCB join ("\n", @cytobands_array);
+  print $LINKS_S_LCB join ("\n", @linkstarts_array);
+
+  ## get TEs that intersect with LCB region using bedtools
   print STDERR "[DEBUG] Bedtools command: printf '$chrom1\t$min1\t$max1' | bedtools intersect -a $tes_infile1 -b stdin -wa |\n" if $debug;
   open (my $BED1, "printf '$chrom1\t$min1\t$max1' | bedtools intersect -a $tes_infile1 -b stdin -wa |") or die $!;
   while (<$BED1>) {
@@ -243,28 +259,51 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     print STDERR "[DEBUG] LCB#$block:2 ::: $start2-$end2\n" if $debug;
   } else {
     ## switcheroo
-    ## note this still prints the genes in forwards orientation, ie the LCB is plotted on opposite strands
+    ## note this collects gene order as they appear in GFF
     open ($TMP2, "perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile |") or die $!;
     print STDERR "[DEBUG] LCB#$block:2 ::: $end2-$start2\n" if $debug;
   }
+  my (@cytobands_array, @linkends_array); ##
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
-    if ($. == 1) {
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", -1e+9, 1e+9, "background", "gneg") . "\n";
+    # if ($. == 1) {
+    #   print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", -1e+9, 1e+9, "background", "gneg") . "\n";
+    # }
+    my ($cytoband, $link_end);
+    if ($genes_hash{$F[1]}) { ##gene is part of LBC
+      $cytoband = join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk");
+      $link_end = join ("\t", "LCB#$block:2", $F[2], $F[3], "+", $F[1]); ##the strand '+' here is a bit arbitrary...
+      # print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk") . "\n";
+      # print $LINKS_E_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], "+", $F[1]) . "\n"; ##the strand '+' here is a bit arbitrary...
+    } else { ##gene is not part of LBC
+      $cytoband = join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25");
+      # print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
-    if ($genes_hash{$F[1]}) {
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "stalk") . "\n";
-      print $LINKS_E_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], "+", $F[1]) . "\n"; ##the strand '+' here is a bit arbitrary...
-    } else {
-      print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
-    }
+    push (@cytobands_array, $cytoband);
+    push (@linkends_array, $link_end);
     $ideogram{"LCB#$block:2"}{chrom} = $F[0]; ##
     push ( @{ $ideogram{"LCB#$block:2"}{coords} }, $F[2] );
     push ( @{ $ideogram{"LCB#$block:2"}{coords} }, $F[3] );
   }
   close $TMP2;
+  ## calculate min, max coords and range
   my ($chrom2, $min2, $max2) = ($ideogram{"LCB#$block:2"}{chrom}, (min @{ $ideogram{"LCB#$block:2"}{coords} }), (max @{ $ideogram{"LCB#$block:2"}{coords} }) );
   my $range2 = ($max2 - $min2);
+
+  ## print cytobands and links file depending on LCB orientation
+  if ($scores_hash{$block}{'orientation'} eq "plus") {
+    print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $min2, $max2, "background", "gneg") . "\n"; ## print background blank band
+    print $CYTOBANDS_LCB join ("\n", @cytobands_array);
+    print $LINKS_E_LCB join ("\n", @linkends_array);
+  } else { ## reverse order so that LCB is always visualised in FF orientation
+    @cytobands_array = reverse @cytobands_array;
+    print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $min2, $max2, "background", "gneg") . "\n"; ## print background blank band
+    print $CYTOBANDS_LCB join ("\n", @cytobands_array);
+    @linkends_array = reverse @linkends_array;
+    print $LINKS_E_LCB join ("\n", @linkends_array);
+  }
+
+  ## search for intersection with TE file and pull out repeats that occur in LCB region
   print STDERR "[DEBUG] Bedtools command: printf '$chrom2\t$min2\t$max2' | bedtools intersect -a $tes_infile2 -b stdin -wa |\n" if $debug;
   open (my $BED2, "printf '$chrom2\t$min2\t$max2' | bedtools intersect -a $tes_infile2 -b stdin -wa |") or die $!;
   while (<$BED2>) {
@@ -303,10 +342,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $R "repeats<-toGRanges('$results_dir/$outprefix\_LCB\#$block.repeats')\n";
   print $R "starts<-toGRanges('$results_dir/$outprefix\_LCB\#$block.starts')\n";
   print $R "ends<-toGRanges('$results_dir/$outprefix\_LCB\#$block.ends')\n";
-  print $R "## plot\n";
+  print $R "## plot data for LCB\#$block\n";
   my $strand = $scores_hash{$block}{'orientation'};
-  print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, main=paste(genome\$name[1],\" / \",genome\$name[2],\" \($strand\)\",sep=\"\"))\n";
-  my $tick_dist = ($range1+$range2/2) / $numticks;
+  print $R "kp <- plotKaryotype(genome=genome, cytobands=cytobands, plot.type=2, main=paste(genome\$name[1],\" / \",genome\$name[2],\" \($strand\)\",sep=\"\"))\n";
+  print $R "kpPlotLinks(kp, data=starts, data2=ends, col='grey95', border=NA, data.panel=1, y=-0.36)\n";
+  print $R "kpAddCytobands(kp)\n";
+  my $tick_dist = ($range1+$range2/2) / $numticks; ## calculate appropriate inter-tickmark distance
   print $R "kpAddBaseNumbers(kp,tick.dist=$tick_dist, add.units=T, cex = 0.8)\n";
   print $R "mtext(genome\$name[[1]], side=2, outer=T, at=0.56, adj=0, cex=0.75)\n";
   print $R "mtext(genome\$name[[2]], side=2, outer=T, at=0.2, adj=0, cex=0.75)\n";
