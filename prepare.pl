@@ -196,7 +196,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get start and end genes in LCB array
   my $start1 = ${ $collinearity_hash{$block}{'genes1'} }[0];
   my $end1 = ${ $collinearity_hash{$block}{'genes1'} }[-1];
-  my (@cytobands_array, @linkstarts_array);
+  my (@cytobands1_array, @linkstarts_array);
   ## debug
   print STDERR "\n[DEBUG] LCB#$block:1 ::: $start1-$end1\n" if $debug;
 
@@ -219,8 +219,8 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
       $cytoband = join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "gpos25");
       # print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
-    push (@cytobands_array, $cytoband);
-    push (@linkstarts_array, $link_start);
+    push (@cytobands1_array, $cytoband);
+    push (@linkstarts_array, $link_start) if ($link_start); ##skip non-linking genes
     ## get all coords of all genes in region
     $ideogram{"LCB#$block:1"}{chrom} = $F[0]; ##key=LCB##:1; val=chrom
     push ( @{ $ideogram{"LCB#$block:1"}{coords} }, $F[2] ); ##key=LCB##:1; val=@{array of start-end coordinates}
@@ -234,7 +234,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
 
   ## print cytobands and links files
   print $CYTOBANDS_LCB join ("\t", "LCB#$block:1", $min1, $max1, "background", "gneg") . "\n"; ## print background blank band
-  print $CYTOBANDS_LCB join ("\n", @cytobands_array);
+  print $CYTOBANDS_LCB join ("\n", @cytobands1_array);
   print $LINKS_S_LCB join ("\n", @linkstarts_array);
 
   ## get TEs that intersect with LCB region using bedtools
@@ -263,7 +263,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     open ($TMP2, "perl -e 'while (<>) {print if (/\Q$end2\E/../\Q$start2\E/)}' $genes_infile |") or die $!;
     print STDERR "[DEBUG] LCB#$block:2 ::: $end2-$start2\n" if $debug;
   }
-  my (@cytobands_array, @linkends_array); ##
+  my (@cytobands2_array, @linkends_array); ##
   while (<$TMP2>) {
     my @F = split (m/\s+/, $_);
     # if ($. == 1) {
@@ -279,8 +279,8 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
       $cytoband = join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25");
       # print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $F[2], $F[3], $F[1], "gpos25") . "\n";
     }
-    push (@cytobands_array, $cytoband);
-    push (@linkends_array, $link_end);
+    push (@cytobands2_array, $cytoband);
+    push (@linkends_array, $link_end) if ($link_end); ##skip non-linking genes
     $ideogram{"LCB#$block:2"}{chrom} = $F[0]; ##
     push ( @{ $ideogram{"LCB#$block:2"}{coords} }, $F[2] );
     push ( @{ $ideogram{"LCB#$block:2"}{coords} }, $F[3] );
@@ -293,12 +293,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## print cytobands and links file depending on LCB orientation
   if ($scores_hash{$block}{'orientation'} eq "plus") {
     print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $min2, $max2, "background", "gneg") . "\n"; ## print background blank band
-    print $CYTOBANDS_LCB join ("\n", @cytobands_array);
+    print $CYTOBANDS_LCB join ("\n", @cytobands2_array);
     print $LINKS_E_LCB join ("\n", @linkends_array);
   } else { ## reverse order so that LCB is always visualised in FF orientation
-    @cytobands_array = reverse @cytobands_array;
+    @cytobands2_array = reverse @cytobands2_array;
     print $CYTOBANDS_LCB join ("\t", "LCB#$block:2", $min2, $max2, "background", "gneg") . "\n"; ## print background blank band
-    print $CYTOBANDS_LCB join ("\n", @cytobands_array);
+    print $CYTOBANDS_LCB join ("\n", @cytobands2_array);
     @linkends_array = reverse @linkends_array;
     print $LINKS_E_LCB join ("\n", @linkends_array);
   }
