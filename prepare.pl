@@ -318,6 +318,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## ========
   ## get overall coverage information from CIS reads
   if ($coverage1_infile) {
+    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr1: COVERAGE]"; $|=1;
     open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -abam $coverage1_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
