@@ -131,8 +131,10 @@ if (-d $results_dir) {
 } else {
   system ("mkdir $results_dir");
 }
-print STDERR "[INFO] Prefix is $outprefix\n";
-print STDERR "[INFO] Writing output to: $results_dir/\n";
+print STDERR "[INFO] Prefix is '$outprefix'\n";
+print STDERR "[INFO] Writing output to: '$results_dir/'\n";
+print STDERR "[INFO] MCScanX collinearity file: $collinearity_infile\n";
+print STDERR "[INFO] MCScanX scores file: $score_infile\n";
 
 ## parse scores file
 my ($total,$skip) = (0,0);
@@ -151,11 +153,9 @@ while (<$SCORES>) {
   $total++;
 }
 close $SCORES;
-print STDERR "[INFO] Scores file: $score_infile\n";
 print STDERR "[INFO] Number of LCBs passing Ks threshold (<=$ks_threshold): ".commify(scalar(keys %scores_hash))."\n";
 
 ## parse collinearity file
-print STDERR "[INFO] MCScanX collinearity file: $collinearity_infile\n";
 open (my $COLL, $collinearity_infile) or die $!;
 while (<$COLL>) {
   if ($_ =~ m/^#/) {
@@ -182,7 +182,8 @@ if ($genome1_infile) {
   } else {
     print STDERR "[INFO] Seqtk: annotated gaps (Ns) in $genome1_infile\n";
   }
-} elsif ($genome2_infile) {
+}
+if ($genome2_infile) {
   if (system("seqtk cutN -gp1000000 -n10 $genome2_infile > $genome2_infile.$outprefix.gaps_annot.txt") != 0) {
     die "[ERROR] Seqtk command ran with some errors\n";
   } else {
