@@ -20,6 +20,7 @@ my $usage = "
 SYNOPSIS
 
 OPTIONS [*] = required
+  -o|--out          [STRING] : Prefix for outfiles
   -c|--collinearity [FILE]   : MCScanX collinearity file (reformatted!) [*]
   -s|--score        [FILE]   : MCScanX score file [*]
   -a|--annot        [FILE]   : MCScanX genes annotation file (GFF) [*]
@@ -36,7 +37,6 @@ OPTIONS [*] = required
   -k|--ks           [FLOAT]  : Ks threshold to filter LCBs [0.2]
   -N|--gaps         [INT]    : Size of scaffold gap to annotate (>=10 Ns)
   -f|--find         [STRING] : Search string to grep TE id from GFF file ['Class']
-  -o|--out          [STRING] : Prefix for outfiles
   -l|--nolegend              : Don't plot legend [FALSE]
   -n|--names                 : Plot repeat names [FALSE]
   -h|--help                  : this message
@@ -87,11 +87,11 @@ GetOptions (
   'k|ks:f' => \$ks_threshold,
   'N|gaps:i' => \$gaps_threshold,
   'f|find:s' => \$find,
-  'b|numticks:i' => \$numticks,
   'o|outprefix:s' => \$outprefix,
   'l|legend' => \$plot_legend_off,
-  'm|names' => \$plot_names,
-  'a|keep' => \$keep,
+  'n|names' => \$plot_names,
+  'm|numticks:i' => \$numticks,
+  'j|keep' => \$keep,
   'h|help' => \$help,
   'debug' => \$debug
 );
