@@ -206,6 +206,7 @@ print $R "par(family=\"Ubuntu Light\",ps=12, las=1)\n";
 print $R "par(mar=c(4,4,2,4), oma=c(1,1,1,1))\n";
 print $R "par(tcl=-0.25)\n";
 print $R "par(mgp=c(2, 0.6, 0))\n";
+print $R "hists<-viridis(4, alpha=1, option='A')\n";
 ## define some colors for plotting
 my %repeat_colors;
 if ($find eq "Class") {
@@ -317,7 +318,6 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## ========
   ## get overall coverage information from CIS reads
   if ($coverage1_infile) {
-    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr1: COVERAGE]"; $|=1;
     open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -abam $coverage1_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
@@ -495,6 +495,9 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   close $REPEATS;
   close $LINK_STARTS;
   close $LINK_ENDS;
+  close $COV;
+  close $SPLIT;
+  close $DISC;
 
   ## R STUFF
   ## =======
@@ -504,6 +507,9 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $R "\tgenome<-toGRanges('$results_dir/$outprefix\_LCB\#$block.ideogram')\n";
   print $R "\tcytobands<-toGRanges('$results_dir/$outprefix\_LCB\#$block.cytobands')\n";
   print $R "\trepeats<-toGRanges('$results_dir/$outprefix\_LCB\#$block.repeats')\n";
+  print $R "\tcoverage<-toGRanges('$results_dir/$outprefix\_LCB\#$block.coverage')\n";
+	print $R "\tsplit<-toGRanges('$results_dir/$outprefix\_LCB\#$block.split')\n";
+	print $R "\tdisc<-toGRanges('$results_dir/$outprefix\_LCB\#$block.disc')\n";
   # print $R "\trepeats<-toGRanges('$results_dir/$outprefix\_LCB\#$block.repeats')\n";
   print $R "\tstarts<-toGRanges('$results_dir/$outprefix\_LCB\#$block.starts')\n";
   print $R "\tends<-toGRanges('$results_dir/$outprefix\_LCB\#$block.ends')\n";
@@ -531,10 +537,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   } else {
     $r_colors_string = "black";
   }
-  print $R "\tkpPlotRegions(kp, data=nnns, r0=0, r1=0.1, avoid.overlapping=F, col='maroon3', border='maroon3', lwd=2)\n";
   print $R "\tkpPlotRegions(kp, data=repeats, r0=0.1, r1=0.3, avoid.overlapping=F, col=c($r_colors_string), border=c($r_colors_string), lwd=2)\n";
-  print $R "\tlegend(3,0, title='Repeats', c('DNA','Helitron','LINE','SINE','LTR','Other'), pch=15, col=cols, xjust=1, yjust=0.5, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2)\n";
-  print $R "\tlegend(1,0, title='Chromosome', c('collinear gene (this LCB)','collinear gene (different LCB)','non-collinear gene','assembly gap (\\u2265 10 Ns)'), pch=15, col=c('#647fa4','#828282','#c8c8c8','#d92f27'), yjust=0.5, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2)\n";
+  print $R "\tkpPlotCoverage(kp, data=coverage, r0=0.2, r1=0.48, col=hists[1])\n";
+	print $R "\tkpPlotCoverage(kp, data=split, r0=0.5, r1=0.78, col=hists[2])\n";
+	print $R "\tkpPlotCoverage(kp, data=disc, r0=0.8, r1=1.08, col=hists[3])\n";
+  print $R "\tlegend(3,0.2, title='Repeats', c('DNA','Helitron','LINE','SINE','LTR','Other'), pch=15, col=cols, xjust=1, yjust=0.5, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2)\n";
+  print $R "\tlegend(1,0.2, title='Chromosome', c('collinear gene (this LCB)','collinear gene (different LCB)','non-collinear gene','assembly gap (\\u2265 10 Ns)'), pch=15, col=c('#647fa4','#828282','#c8c8c8','#d92f27'), yjust=0.5, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2)\n";
   print $R "\tkpPlotNames(kp, data=repeats, y0=0.1, y1=0.1, labels=repeats\$name,cex=0.5)\n" if $plot_names;
   print $R "}\n\n";
 }
@@ -554,6 +562,23 @@ sub can_run {
   my $tool_path = `which $tool_name`;
   $tool_path =~ s/\n//g;
   return $tool_path;
+}
+
+sub check_bam { ## this doesn't work...
+  my $chrom = $_[0];
+  my $bamfile = $_[1];
+  my %check = ($chrom => 0);
+  open (CMD, "samtools view -H $bamfile |");
+  while (<CMD>) {
+    my @F = split (m/\s+/, $_);
+    $check{$chrom}++;
+  }
+  close CMD;
+  if ($check{$chrom} == 0) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 sub revcomp_lcb {
