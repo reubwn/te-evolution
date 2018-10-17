@@ -203,7 +203,7 @@ print $R "setwd(getwd())\n";
 print $R "## graphics\n";
 # print $R "par(mfrow=c(1,1))\n";
 print $R "par(family=\"Ubuntu Light\",ps=12, las=1)\n";
-print $R "par(mar=c(4,4,2,4), oma=c(1,1,1,1))\n";
+print $R "par(mar=c(1,1,1,1), oma=c(1,1,1,10))\n";
 print $R "par(tcl=-0.25)\n";
 print $R "par(mgp=c(2, 0.6, 0))\n";
 print $R "hists<-viridis(4, alpha=1, option='A')\n";
@@ -542,8 +542,8 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $R "\tkpPlotCoverage(kp, data=coverage, r0=0.2, r1=0.48, col=hists[1])\n";
 	print $R "\tkpPlotCoverage(kp, data=split, r0=0.5, r1=0.78, col=hists[2])\n";
 	print $R "\tkpPlotCoverage(kp, data=disc, r0=0.8, r1=1.08, col=hists[3])\n";
-  print $R "\tlegend(3,0.2, title='Repeats', c('DNA','Helitron','LINE','SINE','LTR','Other'), pch=15, col=cols, xjust=1, yjust=0.5, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2)\n";
-  print $R "\tlegend(1,0.2, title='Chromosome', c('collinear gene (this LCB)','collinear gene (different LCB)','non-collinear gene','assembly gap (\\u2265 10 Ns)'), pch=15, col=c('#647fa4','#828282','#c8c8c8','#d92f27'), yjust=0.5, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2)\n";
+  print $R "\tlegend(1,0.9, title='Chromosome', c('collinear gene (this LCB)','collinear gene (different LCB)','non-collinear gene','assembly gap (\u2265 10 Ns)'), pch=15, col=c('#647fa4','#828282','#c8c8c8','#d92f27'), xjust=0, yjust=1, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2, xpd=NA)\n";
+  print $R "\tlegend(1,0.75, title='Repeats', c('DNA','Helitron','LINE','SINE','LTR','Other'), pch=15, col=cols, xjust=0, yjust=1, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2, xpd=NA)\n";
   print $R "\tkpPlotNames(kp, data=repeats, y0=0.1, y1=0.1, labels=repeats\$name,cex=0.5)\n" if $plot_names;
   print $R "}\n\n";
 }
