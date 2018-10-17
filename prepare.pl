@@ -285,6 +285,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## REPEATS
   ## =======
   ## get TEs that intersect with LCB region using bedtools
+  print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr1: REPEATS]"; $|=1;
   print STDERR "[DEBUG] Bedtools command: printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -a $tes1_infile -b stdin -wa |\n" if $debug;
   open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -a $tes1_infile -b stdin -wa |") or die $!;
   while (<CMD>) {
@@ -301,6 +302,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## ====
   ## get NNNs that intersect with LCB region using bedtools and seqtk
   if ($genome1_infile) {
+    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr1: GAPS]"; $|=1;
     open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -a $genome1_infile.$outprefix.gaps_annot.txt -b stdin -wa |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
@@ -315,6 +317,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## ========
   ## get overall coverage information from CIS reads
   if ($coverage1_infile) {
+    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr1: COVERAGE]"; $|=1;
     open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -abam $coverage1_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
@@ -324,6 +327,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   }
   ## get coverage information from TRANS split reads (i.e. reads from species 2 mapped to species 1)
   if ($split1_infile) {
+    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr1: SPLIT]"; $|=1;
     open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -abam $split1_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
@@ -333,6 +337,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   }
   ## get coverage information from TRANS discordant reads
   if ($disc1_infile) {
+    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr1: DISCORDANT]"; $|=1;
     open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -abam $disc1_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
@@ -387,6 +392,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## REPEATS
   ## =======
   ## get TEs that intersect with LCB region using bedtools
+  print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr2: REPEATS]"; $|=1;
   print STDERR "[DEBUG] Bedtools command: printf '$chrom_chr2\t$min_chr2\t$max_chr2' | bedtools intersect -a $tes2_infile -b stdin -wa |\n" if $debug;
   open (my $BED2, "printf '$chrom_chr2\t$min_chr2\t$max_chr2' | bedtools intersect -a $tes2_infile -b stdin -wa |") or die $!;
   my %repeat_count;
@@ -403,6 +409,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## ====
   ## get NNNs that intersect with LCB region using bedtools and seqtk
   if ($genome2_infile) {
+    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr2: GAPS]"; $|=1;
     open (CMD, "printf '$chrom_chr2\t$min_chr2\t$max_chr2' | bedtools intersect -a $genome2_infile.$outprefix.gaps_annot.txt -b stdin -wa |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
@@ -415,6 +422,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## ========
   ## get overall coverage information from CIS reads
   if ($coverage2_infile) {
+    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr2: COVERAGE]"; $|=1;
     open (CMD, "printf '$chrom_chr2\t$min_chr2\t$max_chr2' | bedtools intersect -abam $coverage2_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
@@ -424,6 +432,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   }
   ## get coverage information from TRANS split reads (i.e. reads from species 2 mapped to species 1)
   if ($split2_infile) {
+    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr2: SPLIT]"; $|=1;
     open (CMD, "printf '$chrom_chr2\t$min_chr2\t$max_chr2' | bedtools intersect -abam $split2_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
@@ -433,6 +442,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   }
   ## get coverage information from TRANS discordant reads
   if ($disc2_infile) {
+    print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr2: DISC]"; $|=1;
     open (CMD, "printf '$chrom_chr2\t$min_chr2\t$max_chr2' | bedtools intersect -abam $disc2_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
