@@ -236,9 +236,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $LINK_STARTS join ("\t", "chr", "start", "end", "strand", "name") . "\n";
   print $LINK_ENDS join ("\t", "chr", "start", "end", "strand", "name") . "\n";
   print $REPEATS join ("\t", "chr", "start", "end", "strand", "name") . "\n";
-  print $COV join ("\t", "chr", "start", "end", "strand", "name") . "\n";
-  print $SPLIT join ("\t", "chr", "start", "end", "strand", "name") . "\n";
-  print $DISC join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+  # print $COV join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+  # print $SPLIT join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+  # print $DISC join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+  print $COV join ("\t", "chr", "x", "y") . "\n";
+  print $SPLIT join ("\t", "chr", "x", "y") . "\n";
+  print $DISC join ("\t", "chr", "x", "y") . "\n";
 
   ## first do for 'genes1'
   ## =====================
@@ -319,7 +322,13 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get overall coverage information from CIS reads
   if ($coverage1_infile) {
     print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr1: COVERAGE]"; $|=1;
-    open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -abam $coverage1_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
+    # open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -abam $coverage1_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
+    # while (<CMD>) {
+    #   my @F = split (/\s+/, $_);
+    #   print $COV join ("\t", "LCB#$block:1", $F[1], $F[2], $F[5], $F[3]) . "\n";
+    # }
+    # close CMD;
+    open (CMD, "perl -e 'while (<>) {print if (/$chrom_chr1\s+$min_chr1\s+\d+\n/../$chrom_chr1\s+$max_chr1\s+\d+\n/)}' $coverage1_infile |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
       print $COV join ("\t", "LCB#$block:1", $F[1], $F[2], $F[5], $F[3]) . "\n";
@@ -538,7 +547,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   } else {
     $r_colors_string = "black";
   }
-  print $R "\tkpPlotRegions(kp, data=repeats, r0=0.1, r1=0.3, avoid.overlapping=F, col=c($r_colors_string), border=c($r_colors_string), lwd=2)\n";
+  print $R "\tkpPlotRegions(kp, data=repeats, r0=0, r1=0.1, avoid.overlapping=F, col=c($r_colors_string), border=c($r_colors_string), lwd=2)\n";
   print $R "\tkpPlotCoverage(kp, data=coverage, r0=0.2, r1=0.48, col=hists[1])\n";
 	print $R "\tkpPlotCoverage(kp, data=split, r0=0.5, r1=0.78, col=hists[2])\n";
 	print $R "\tkpPlotCoverage(kp, data=disc, r0=0.8, r1=1.08, col=hists[3])\n";
