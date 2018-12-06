@@ -322,18 +322,18 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   ## get overall coverage information from CIS reads
   if ($coverage1_infile) {
     print STDERR "\r[INFO] Block number: $block ($scores_hash{$block}{'orientation'}) [$chrom_chr1: COVERAGE]"; $|=1;
-    # open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -abam $coverage1_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
-    # while (<CMD>) {
-    #   my @F = split (/\s+/, $_);
-    #   print $COV join ("\t", "LCB#$block:1", $F[1], $F[2], $F[5], $F[3]) . "\n";
-    # }
-    # close CMD;
-    open (CMD, "perl -e 'while (<>) {print if (/$chrom_chr1\s+$min_chr1\s+\d+\n/../$chrom_chr1\s+$max_chr1\s+\d+\n/)}' $coverage1_infile |") or die $!;
+    open (CMD, "printf '$chrom_chr1\t$min_chr1\t$max_chr1' | bedtools intersect -abam $coverage1_infile -b stdin -wa | bedtools bamtobed -i stdin |") or die $!;
     while (<CMD>) {
       my @F = split (/\s+/, $_);
       print $COV join ("\t", "LCB#$block:1", $F[1], $F[2], $F[5], $F[3]) . "\n";
     }
     close CMD;
+    # open (CMD, "perl -e 'while (<>) {print if (/$chrom_chr1\\s+$min_chr1\\s+\\d+\n/../$chrom_chr1\\s+$max_chr1\\s+\\d+\n/)}' $coverage1_infile |") or die $!;
+    # while (<CMD>) {
+    #   my @F = split (/\s+/, $_);
+    #   print $COV join ("\t", "LCB#$block:1", $F[1], $F[2], $F[5], $F[3]) . "\n";
+    # }
+    # close CMD;
   }
   ## get coverage information from TRANS split reads (i.e. reads from species 2 mapped to species 1)
   if ($split1_infile) {
