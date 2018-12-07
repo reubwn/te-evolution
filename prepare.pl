@@ -239,7 +239,7 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $COV join ("\t", "chr", "start", "end", "strand", "name") . "\n";
   print $SPLIT join ("\t", "chr", "start", "end", "strand", "name") . "\n";
   print $DISC join ("\t", "chr", "start", "end", "strand", "name") . "\n";
-  # print $COV join ("\t", "chr", "x", "y") . "\n";
+  # print $COV join ("\t", "chr", "x", "y") . "\n"; ## this is to try and make it quicker
   # print $SPLIT join ("\t", "chr", "x", "y") . "\n";
   # print $DISC join ("\t", "chr", "x", "y") . "\n";
 
@@ -548,9 +548,9 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
     $r_colors_string = "black";
   }
   print $R "\tkpPlotRegions(kp, data=repeats, r0=0, r1=0.1, avoid.overlapping=F, col=c($r_colors_string), border=c($r_colors_string), lwd=2)\n";
-  print $R "\tkpPlotCoverage(kp, data=coverage, r0=0.2, r1=0.48, col=hists[1])\n";
-	print $R "\tkpPlotCoverage(kp, data=split, r0=0.5, r1=0.78, col=hists[2])\n";
-	print $R "\tkpPlotCoverage(kp, data=disc, r0=0.8, r1=1.08, col=hists[3])\n";
+  print $R "\tkpPlotCoverage(kp, data=coverage, r0=0.2, r1=0.48, col=hists[1], show.0.cov=F)\n";
+	print $R "\tkpPlotCoverage(kp, data=split, r0=0.5, r1=0.78, col=hists[2], show.0.cov=F)\n";
+	print $R "\tkpPlotCoverage(kp, data=disc, r0=0.8, r1=1.08, col=hists[3], show.0.cov=F)\n";
   print $R "\tlegend(1,0.9, title='Chromosome', c('collinear gene (this LCB)','collinear gene (different LCB)','non-collinear gene','assembly gap (\\u2265 10 Ns)'), pch=15, col=c('#647fa4','#828282','#c8c8c8','#d92f27'), xjust=0, yjust=1, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2, xpd=NA)\n";
   print $R "\tlegend(1,0.75, title='Repeats', c('DNA','Helitron','LINE','SINE','LTR','Other'), pch=15, col=cols, xjust=0, yjust=1, bg='grey95', box.col='grey50',cex=0.75, pt.cex=2, xpd=NA)\n";
   print $R "\tkpPlotNames(kp, data=repeats, y0=0.1, y1=0.1, labels=repeats\$name,cex=0.5)\n" if $plot_names;
