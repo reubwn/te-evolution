@@ -236,12 +236,12 @@ foreach my $block (sort {$a<=>$b} keys %collinearity_hash) {
   print $LINK_STARTS join ("\t", "chr", "start", "end", "strand", "name") . "\n";
   print $LINK_ENDS join ("\t", "chr", "start", "end", "strand", "name") . "\n";
   print $REPEATS join ("\t", "chr", "start", "end", "strand", "name") . "\n";
-  # print $COV join ("\t", "chr", "start", "end", "strand", "name") . "\n";
-  # print $SPLIT join ("\t", "chr", "start", "end", "strand", "name") . "\n";
-  # print $DISC join ("\t", "chr", "start", "end", "strand", "name") . "\n";
-  print $COV join ("\t", "chr", "x", "y") . "\n";
-  print $SPLIT join ("\t", "chr", "x", "y") . "\n";
-  print $DISC join ("\t", "chr", "x", "y") . "\n";
+  print $COV join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+  print $SPLIT join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+  print $DISC join ("\t", "chr", "start", "end", "strand", "name") . "\n";
+  # print $COV join ("\t", "chr", "x", "y") . "\n";
+  # print $SPLIT join ("\t", "chr", "x", "y") . "\n";
+  # print $DISC join ("\t", "chr", "x", "y") . "\n";
 
   ## first do for 'genes1'
   ## =====================
