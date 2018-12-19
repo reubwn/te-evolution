@@ -59,14 +59,14 @@ if ($fasta_infile) {
       $genome_length += length ($_);
     }
   }
-  print STDERR "[####] Genome length: $genome_length bp";
+  print STDERR "[####] Genome length: $genome_length bp\n";
 }
 
 open (my $IN, $RM_infile) or die $!;
 while (<$IN>) {
   chomp;
-  trim ($_); ## remove leading/trailing whitespace
-  my @F = split (/\s+/, $_);
+  my $line = trim ($_); ## remove leading/trailing whitespace
+  my @F = split (/\s+/, $line);
   if ($F[0] !~ m/\d+/) {
     next;
   } else {
