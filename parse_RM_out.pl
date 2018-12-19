@@ -150,7 +150,7 @@ if ($RM_infile) {
     $files_hash{$file} = \%print_hash;
   }
 
-  print STDOUT join ("\t", "\t", nsort keys %files_hash);
+  print STDOUT join ("\t", "repeat", nsort keys %files_hash) . "\n";
   foreach my $repeat (nsort keys %repeats_hash) {
     print STDOUT "$repeat\t";
     foreach my $file (nsort keys %files_hash) {
