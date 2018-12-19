@@ -18,9 +18,14 @@ use Bio::SeqIO;
 
 my $usage = "
 SYNOPSIS
+  Plots the position of annotated TEs relative to locally collinear blocks (LCBs)
+  output from MCScanX analysis. Also plots read coverage from (a) cis reads (i.e.
+  reads from self), (b) discordant trans reads (i.e., from the other sample) and
+  (c) split trans reads. Discordant and split read positions are taken from the
+  output of Samblaster.  
 
 OPTIONS [*] = required
-  -o|--out          [STRING] : Prefix for outfiles
+  -o|--out          [STRING] : Prefix for outfiles ('prepare')
   -c|--collinearity [FILE]   : MCScanX collinearity file (reformatted!) [*]
   -s|--score        [FILE]   : MCScanX score file [*]
   -a|--annot        [FILE]   : MCScanX genes annotation file (GFF) [*]
