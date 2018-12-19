@@ -66,11 +66,11 @@ open (my $IN, $RM_infile) or die $!;
 while (<$IN>) {
   chomp;
   my $line = trim ($_); ## remove leading/trailing whitespace
-  my @F = split (/\s+/, $line);
-  if ($F[0] !~ m/\d+/) {
+  if ($line !~ m/^\d+/) {
     next;
   } else {
-    $print_hash{$F[10]} += ( $F[5] - $F[6] + 1 );
+    my @F = split (/\s+/, $line);
+    $print_hash{$F[10]} += ( $F[6] - $F[5] + 1 );
   }
 }
 close $IN;
