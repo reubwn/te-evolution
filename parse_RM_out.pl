@@ -18,6 +18,7 @@ SYNOPSIS
 OPTIONS [*] = required
   -i|--infile [FILE] : RepeatMasker out file (*.out) [*]
   -f|--fasta  [FILE] : Genome fasta file
+  -n|--nocondense    : Classify based on subfamilies [family]
   -h|--help          : this message
 
 OUTPUTS
@@ -70,7 +71,12 @@ while (<$IN>) {
     next;
   } else {
     my @F = split (/\s+/, $line);
-    $print_hash{$F[10]} += ( $F[6] - $F[5] + 1 );
+    unless ($no_condense) {
+      my $rep = $F[10];
+      $rep =~ s/-.*//;
+      $rep =~ s/\?$//;
+    }
+    $print_hash{$rep} += ( $F[6] - $F[5] + 1 );
   }
 }
 close $IN;
