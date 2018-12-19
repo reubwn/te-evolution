@@ -70,7 +70,7 @@ while (<$IN>) {
   if ($F[0] !~ m/\d+/) {
     next;
   } else {
-    $print_hash{$F[10]} += ( $F[6] - $F[7] +1 );
+    $print_hash{$F[10]} += ( $F[5] - $F[6] + 1 );
   }
 }
 close $IN;
