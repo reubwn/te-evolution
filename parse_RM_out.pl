@@ -120,7 +120,7 @@ if ($RM_infile) {
         next;
       } else {
         chomp;
-        $genome_length_perfile += length ($_);
+        $genome_length += length ($_);
       }
     }
     print STDERR "[####] Genome length: $genome_length bp\n";
