@@ -74,7 +74,7 @@ while (<$IN>) {
     my $rep = $F[10];
     unless ($no_condense) {
       $rep =~ s/-.*//;
-      $rep =~ s/\?$//;
+      $rep =~ s/\?//;
     }
     $print_hash{$rep} += ( $F[6] - $F[5] + 1 );
   }
