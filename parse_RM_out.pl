@@ -71,8 +71,8 @@ while (<$IN>) {
     next;
   } else {
     my @F = split (/\s+/, $line);
+    my $rep = $F[10];
     unless ($no_condense) {
-      my $rep = $F[10];
       $rep =~ s/-.*//;
       $rep =~ s/\?$//;
     }
