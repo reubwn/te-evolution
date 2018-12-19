@@ -16,8 +16,9 @@ my $usage = "
 SYNOPSIS
 
 OPTIONS [*] = required
-  -i|--infile [FILE] : RepeatMasker out file (*.out) [*]
+  -i|--infile [FILE] : RepeatMasker out file (*.out)
   -f|--fasta  [FILE] : Genome fasta file
+  -g|--glob          : Will glob all *.out files and attempt to process them
   -n|--nocondense    : Classify based on subfamilies [family]
   -h|--help          : this message
 
@@ -28,6 +29,7 @@ OUTPUTS
 my (
   $RM_infile,
   $fasta_infile,
+  $glob,
   $no_condense,
   $help, $debug
 );
@@ -37,6 +39,7 @@ my $outprefix = "plot_RM";
 GetOptions (
   'i|infile=s' => \$RM_infile,
   'f|fasta:s' => \$fasta_infile,
+  'g|glob' => \$glob,
   'h|help' => \$help,
   'debug' => \$debug
 );
@@ -97,7 +100,7 @@ if ($RM_infile) {
 ######################
 ## glob multiple files
 ######################
-} else {
+} elsif ($glob) {
 
   ## STUFF
   my %files_hash;
@@ -151,7 +154,7 @@ if ($RM_infile) {
   foreach my $repeat (nsort keys %repeats_hash) {
     print STDOUT "$repeat\t";
     foreach my $file (nsort keys %files_hash) {
-      my %print_hash = %{ $files_hash{$_} };
+      my %print_hash = %{ $files_hash{$file} };
       if ($print_hash{$repeat} ) {
         print STDOUT (($print_hash{$repeat}/$genome_lengths_hash{$file})*100) . "\t";
       } else {
