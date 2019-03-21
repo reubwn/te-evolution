@@ -11,12 +11,13 @@ my $usage = "
 SYNOPSIS
 
 OPTIONS [*] = required
-  -i|--sam   [FILE] : BAM/SAM file of reads mapped to LTRs [*]
+  -i|--sam     [FILE] : BAM/SAM file of reads mapped to LTRs [*]
+  -d|--dbs   [STRING] : comma delim list of genomes to search [*]
   -e|--overhang [INT] : require at least this number of bases as genome tag [50]
   -t|--threads  [INT] : number of threads for multicore operations [4]
-  -h|--help         : this message
-  -v|--verbose      : verbose mode
-  -d|--debug        : debug mode
+  -h|--help           : this message
+  -v|--verbose        : verbose mode
+  -d|--debug          : debug mode
 \n";
 
 ## input
@@ -38,7 +39,7 @@ GetOptions (
   );
 ## help and usage
 die $usage if $help;
-die $usage unless ($sam_infile);
+die $usage unless ( $sam_infile && $db_string );
 
 print STDERR "[####] TE-EVOLUTION blast_tags.pl\n";
 print STDERR "[####] " . `date`;
