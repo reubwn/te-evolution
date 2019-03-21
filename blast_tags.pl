@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+use Scalar::Util;
 use Sort::Naturally;
 use Getopt::Long qw(:config no_ignore_case);
 
