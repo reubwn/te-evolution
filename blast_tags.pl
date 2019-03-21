@@ -99,9 +99,9 @@ if ( $verbose ) {
 
 ## print lefties and righties to file for BLASTing
 foreach (nsort keys %ltr_hash) {
-  my @left_names = @{ $ltr_hash{$_}{left_names} } unless (scalar @{ $ltr_hash{$_}{left_names} } == 0);
-  my @left_seqs = @{ $ltr_hash{$_}{left_seqs} } unless (scalar @{ $ltr_hash{$_}{left_seqs} } == 0);
-  print "$_: ".scalar @{ $ltr_hash{$_}{left_names} }."\n";
+  my @left_names = @{ $ltr_hash{$_}{left_names} } unless (!(@{$ltr_hash{$_}{left_names}}));
+  my @left_seqs = @{ $ltr_hash{$_}{left_seqs} } unless (!(@{$ltr_hash{$_}{left_seqs}}));
+  # print "$_: ".scalar @{ $ltr_hash{$_}{left_names} }."\n";
   # print "@left_seqs\n";
 
   open (my $F, ">$_.lefties.fa") or die $!;
