@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Data::Dumper;
-use Scalar::Util;
 use Sort::Naturally;
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -94,31 +93,31 @@ close $SAM;
 ## print some information
 if ( $verbose ) {
   foreach (nsort keys %ltr_hash) {
-    my $lefties = reftype $ltr_hash{$_}{left_names} eq 'ARRAY' ? scalar(@{$ltr_hash{$_}{left_names}}) : "0";
-    my $righties = reftype $ltr_hash{$_}{right_names} eq 'ARRAY' ? scalar(@{$ltr_hash{$_}{right_names}}) : "0";
+    my $lefties = ref $ltr_hash{$_}{left_names} eq 'ARRAY' ? scalar(@{$ltr_hash{$_}{left_names}}) : "0";
+    my $righties = ref $ltr_hash{$_}{right_names} eq 'ARRAY' ? scalar(@{$ltr_hash{$_}{right_names}}) : "0";
     print STDERR "[INFO] $_ has $lefties left reads and $righties right reads\n";
   }
 }
 
 ## print lefties and righties to file for BLASTing
-# foreach (nsort keys %ltr_hash) {
-#   my ( @left_names, @left_seqs, @right_names, @right_seqs );
-#   if ( (@{$ltr_hash{$_}{left_names}}) && (@{$ltr_hash{$_}{left_seqs}}) ) {
-#     @left_names = @{$ltr_hash{$_}{left_names}};
-#     @left_seqs = @{$ltr_hash{$_}{left_seqs}};
-#     open (my $F, ">$_.lefties.fa") or die $!;
-#     for my $i ( 0 .. $#left_names ) {
-#       print $F ">$left_names[$i]\n$left_seqs[$i]\n";
-#     }
-#     close $F;
-#   }
-#   #  = @{$ltr_hash{$_}{left_names}} ? @{$ltr_hash{$_}{left_names}} : qw/ 0 / ;
-#   # my  = @{ $ltr_hash{$_}{left_seqs} } unless (!(@{$ltr_hash{$_}{left_seqs}}));
-#   # print "$_: ".scalar @{ $ltr_hash{$_}{left_names} }."\n";
-#   # print "@left_seqs\n";
-#
-#
-# }
+foreach (nsort keys %ltr_hash) {
+  my ( @left_names, @left_seqs, @right_names, @right_seqs );
+  if ( (ref $ltr_hash{$_}{left_names}} eq 'ARRAY') && (ref $ltr_hash{$_}{left_seqs}} eq 'ARRAY') ) {
+    @left_names = @{$ltr_hash{$_}{left_names}};
+    @left_seqs = @{$ltr_hash{$_}{left_seqs}};
+    open (my $F, ">$_.lefties.fa") or die $!;
+    for my $i ( 0 .. $#left_names ) {
+      print $F ">$left_names[$i]\n$left_seqs[$i]\n";
+    }
+    close $F;
+  }
+  #  = @{$ltr_hash{$_}{left_names}} ? @{$ltr_hash{$_}{left_names}} : qw/ 0 / ;
+  # my  = @{ $ltr_hash{$_}{left_seqs} } unless (!(@{$ltr_hash{$_}{left_seqs}}));
+  # print "$_: ".scalar @{ $ltr_hash{$_}{left_names} }."\n";
+  # print "@left_seqs\n";
+
+
+}
 #
 #
 # ################### SUBS
