@@ -51,7 +51,7 @@ my ( $ambiguous ) = ( 0 );
 ## check system for required programs
 check_progs();
 
-my @databases = split( m/\,/, $string );
+my @databases = split( m/\,/, $db_string );
 print STDERR "[INFO] Creating blastdb's from: @databases\n";
 
 check_blastdbs ( \@databases );
@@ -145,11 +145,11 @@ sub make_blastdbs {
   return if ( scalar(@databases) == 0 );
 
   if ( &parallel == 0 ) {
-    if ( system("parallel -j $threads 'makeblastdb -in {} -dbtype nucl' ::: @split") != 0 ) {
+    if ( system("parallel -j $threads 'makeblastdb -in {} -dbtype nucl' ::: @databases") != 0 ) {
       die "[ERROR] Something wrong with makeblastdb command\n";
     }
   } else {
-    foreach (@split) {
+    foreach (@databases) {
       if ( system("makeblastdb -in $_ -dbtype nucl") != 0 ) {
         die "[ERROR] Something wrong with makeblastdb command: $_\n";
       }
