@@ -95,9 +95,9 @@ if ( $verbose ) {
 ################### SUBS
 
 sub check_progs {
-  my $makeblastdb_path = `which makeblastdb`;
-  my $blastn_path = `which makeblastdb`;
-  my $samtools_path = `which makeblastdb`;
+  chomp( my $makeblastdb_path = `which makeblastdb` );
+  chomp( my $blastn_path = `which blastn` );
+  chomp( my $samtools_path = `which samtools` );
   if (!( $makeblastdb_path )) {
     die "[ERROR] Cannot find makeblastdb in \$PATH\n";
   } else {
@@ -111,7 +111,7 @@ sub check_progs {
   if (!( $samtools_path )) {
     die "[ERROR] Cannot find samtools in \$PATH\n";
   } else {
-    print STDERR "[INFO] Found blastn at $samtools_path\n"; ##
+    print STDERR "[INFO] Found samtools at $samtools_path\n"; ##
   }
 }
 
