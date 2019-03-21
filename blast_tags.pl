@@ -99,8 +99,8 @@ if ( $verbose ) {
 
 ## print lefties and righties to file for BLASTing
 foreach (nsort keys %ltr_hash) {
-  my @left_names = @{ $ltr_hash{$_}{left_names} };
-  my @left_seqs = @{ $ltr_hash{$_}{left_seqs} };
+  my @left_names = @{ $ltr_hash{$_}{left_names} } if (@{ $ltr_hash{$_}{left_names} });
+  my @left_seqs = @{ $ltr_hash{$_}{left_seqs} } if (@{ $ltr_hash{$_}{left_seqs} });
   print "@left_names\n";
   print "@left_seqs\n";
 
