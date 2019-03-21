@@ -66,6 +66,7 @@ while (my $line = <$SAM>) {
     ## read overhangs left-side of LTR element
     if ( $1 >= $overhang_threshold ) {
       ## read has 'genome' tag >= $overhang_threshold
+      $F[0] =~ s/\s.+// if ($F[0] =~ m/\s+/); ## remove trailing text with whitespaces, common in fastq headers
       push @{ $ltr_hash{$F[2]}{left_names} }, $F[0];
       push @{ $ltr_hash{$F[2]}{left_cigars} }, $F[5];
       push @{ $ltr_hash{$F[2]}{left_seqs} }, $F[9];
@@ -75,6 +76,7 @@ while (my $line = <$SAM>) {
     ## read overhangs right-side of LTR element
     if ( $1 >= $overhang_threshold ) {
       ## read has 'genome' tag >= $overhang_threshold
+      $F[0] =~ s/\s.+// if ($F[0] =~ m/\s+/);
       push @{ $ltr_hash{$F[2]}{right_names} }, $F[0];
       push @{ $ltr_hash{$F[2]}{right_cigars} }, $F[5];
       push @{ $ltr_hash{$F[2]}{right_seqs} }, $F[9];
@@ -88,7 +90,7 @@ while (my $line = <$SAM>) {
 }
 close $SAM;
 
-# print Dumper \%ltr_hash;
+print Dumper \%ltr_hash;
 
 ## print some information
 if ( $verbose ) {
@@ -100,11 +102,35 @@ if ( $verbose ) {
 }
 
 ## print lefties and righties to file for BLASTing
-foreach (nsort keys %ltr_hash) {
-  my ( @left_names, @left_seqs, @right_names, @right_seqs );
-  if ( ($ltr_hash{$_}{left_names}) && ($ltr_hash{$_}{left_seqs}) ) {
-    @left_names = @{$ltr_hash{$_}{left_names}};
-    @left_seqs = @{$ltr_hash{$_}{left_seqs}};
+foreach my $query (nsort keys %ltr_hash) {
+  # my ( @left_names, @left_seqs, @right_names, @right_seqs );
+  ## process lefties
+  if ( ($ltr_hash{$query}{left_names}) && ($ltr_hash{$query}{left_seqs}) ) {
+    my @left_names = @{$ltr_hash{$query}{left_names}};
+    my @left_seqs = @{$ltr_hash{$query}{left_seqs}};
+    my @left_cigars = @{$ltr_hash{$query}{left_cigars}};
+
+    ## write to file
+    open (my $F, ">$query.lefties.fa") or die $!;
+    for my $i ( 0 .. $#left_names ) {
+      print $F ">$left_names[$i]\n$left_seqs[$i]\n";
+    }
+    close $F;
+
+    ## BLAST vs each database in turn
+    foreach my $database (@databases) {
+      open (my $BLAST, "blastn -num_threads $threads -task megablast -evalue 1e-20 -query $query -db -outfmt '6 std qcovus' |") or die $!;
+      while (my $line = <$BLAST>) {
+
+      }
+    }
+
+  }
+
+  ## process righties
+  if ( ($ltr_hash{$_}{right_names}) && ($ltr_hash{$_}{right_seqs}) ) {
+    my @right_names = @{$ltr_hash{$_}{left_names}};
+    my @right_seqs = @{$ltr_hash{$_}{left_seqs}};
     open (my $F, ">$_.lefties.fa") or die $!;
     for my $i ( 0 .. $#left_names ) {
       print $F ">$left_names[$i]\n$left_seqs[$i]\n";
