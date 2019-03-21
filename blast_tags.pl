@@ -88,16 +88,16 @@ while (my $line = <$SAM>) {
 }
 close $SAM;
 
-print Dumper \%ltr_hash;
+# print Dumper \%ltr_hash;
 
 ## print some information
-# if ( $verbose ) {
-#   foreach (nsort keys %ltr_hash) {
-#     my $lefties = exists(@{$ltr_hash{$_}{left_names}}[0]) ? scalar(@{$ltr_hash{$_}{left_names}}) : "0";
-#     my $righties = exists(@{$ltr_hash{$_}{right_names}}[0]) ? scalar(@{$ltr_hash{$_}{right_names}}) : "0";
-#     print STDERR "[INFO] $_ has $lefties left reads and $righties right reads\n";
-#   }
-# }
+if ( $verbose ) {
+  foreach (nsort keys %ltr_hash) {
+    my $lefties = ref $ltr_hash{$_}{left_names}} eq 'ARRAY' ? scalar(@{$ltr_hash{$_}{left_names}}) : "0";
+    my $righties = ref @{$ltr_hash{$_}{right_names}} eq 'ARRAY' ? scalar(@{$ltr_hash{$_}{right_names}}) : "0";
+    print STDERR "[INFO] $_ has $lefties left reads and $righties right reads\n";
+  }
+}
 
 ## print lefties and righties to file for BLASTing
 # foreach (nsort keys %ltr_hash) {
