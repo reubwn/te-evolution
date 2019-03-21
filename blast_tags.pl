@@ -86,8 +86,8 @@ close $SAM;
 ## gather some information
 if ( $verbose ) {
   foreach (nsort keys %ltr_hash) {
-    my $lefties = defined( @{$ltr_hash{$_}{left_readnames}} ) ? scalar(@{$ltr_hash{$_}{left_readnames}}) : "0";
-    my $righties = defined( @{$ltr_hash{$_}{right_readnames}} ) ? scalar(@{$ltr_hash{$_}{right_readnames}}) : "0";
+    my $lefties = @{$ltr_hash{$_}{left_readnames}} ? scalar(@{$ltr_hash{$_}{left_readnames}}) : "0";
+    my $righties = @{$ltr_hash{$_}{right_readnames}} ? scalar(@{$ltr_hash{$_}{right_readnames}}) : "0";
     print STDERR "[INFO] $_ has $lefties left reads and $righties right reads\n";
   }
 }
