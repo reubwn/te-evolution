@@ -52,7 +52,7 @@ my ( $ambiguous ) = ( 0 );
 check_progs();
 
 my @databases = split( m/\,/, $db_string );
-print STDERR "[INFO] Creating blastdb's from: @databases\n";
+print STDERR "[INFO] Check/make blastdb's for: @databases\n";
 
 @databases = @{ check_blastdbs(\@databases) };
 make_blastdbs( \@databases );
@@ -66,18 +66,18 @@ while (my $line = <$SAM>) {
     ## read overhangs left-side of LTR element
     if ( $1 >= $overhang_threshold ) {
       ## read has 'genome' tag >= $overhang_threshold
-      push @{ $ltr_hash{$F[2]}{left_readnames} }, $F[0];
+      push @{ $ltr_hash{$F[2]}{left_names} }, $F[0];
       push @{ $ltr_hash{$F[2]}{left_cigars} }, $F[5];
-      push @{ $ltr_hash{$F[2]}{left_readseqs} }, $F[9];
+      push @{ $ltr_hash{$F[2]}{left_seqs} }, $F[9];
 
     }
   } elsif ( $F[5] =~ m/(\d+)S$/ ) {
     ## read overhangs right-side of LTR element
     if ( $1 >= $overhang_threshold ) {
       ## read has 'genome' tag >= $overhang_threshold
-      push @{ $ltr_hash{$F[2]}{right_readnames} }, $F[0];
+      push @{ $ltr_hash{$F[2]}{right_names} }, $F[0];
       push @{ $ltr_hash{$F[2]}{right_cigars} }, $F[5];
-      push @{ $ltr_hash{$F[2]}{right_readseqs} }, $F[9];
+      push @{ $ltr_hash{$F[2]}{right_seqs} }, $F[9];
 
     }
 
@@ -88,14 +88,27 @@ while (my $line = <$SAM>) {
 }
 close $SAM;
 
-## gather some information
+## print some information
 if ( $verbose ) {
   foreach (nsort keys %ltr_hash) {
-    my $lefties = @{$ltr_hash{$_}{left_readnames}} ? scalar(@{$ltr_hash{$_}{left_readnames}}) : "0";
-    my $righties = @{$ltr_hash{$_}{right_readnames}} ? scalar(@{$ltr_hash{$_}{right_readnames}}) : "0";
+    my $lefties = @{$ltr_hash{$_}{left_names}} ? scalar(@{$ltr_hash{$_}{left_names}}) : "0";
+    my $righties = @{$ltr_hash{$_}{right_names}} ? scalar(@{$ltr_hash{$_}{right_names}}) : "0";
     print STDERR "[INFO] $_ has $lefties left reads and $righties right reads\n";
   }
 }
+
+## print lefties and righties to file for BLASTing
+foreach (nsort keys %ltr_hash) {
+  my @left_names = @{ $ltr_hash{$_}{left_names} };
+  my @left_seqs = @{ $ltr_hash{$_}{right_seqs} };
+
+  open (my $F, ">$_.fa") or die $!;
+  for my $i ( 0 .. $#left_names ) {
+    print $F ">$left_names[$i]\n$left_seqs[$i]\n";
+  }
+  close $F;
+}
+
 
 ################### SUBS
 
@@ -158,6 +171,7 @@ sub make_blastdbs {
 }
 
 sub run_blast {
-
+  my $seq = $_[0];
+  open (my $BLAST, "blastn -query $seq")
 
 }
