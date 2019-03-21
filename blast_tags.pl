@@ -91,7 +91,7 @@ close $SAM;
 ## print some information
 if ( $verbose ) {
   foreach (nsort keys %ltr_hash) {
-    my $lefties = @{$ltr_hash{$_}{left_names}} ? scalar(@{$ltr_hash{$_}{left_names}}) : 0;
+    my $lefties = (@{$ltr_hash{$_}{left_names}}) ? scalar(@{$ltr_hash{$_}{left_names}}) : 0;
     my $righties = @{$ltr_hash{$_}{right_names}} ? scalar(@{$ltr_hash{$_}{right_names}}) : 0;
     print STDERR "[INFO] $_ has $lefties left reads and $righties right reads\n";
   }
