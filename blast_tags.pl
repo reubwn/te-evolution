@@ -88,6 +88,8 @@ while (my $line = <$SAM>) {
 }
 close $SAM;
 
+print Dumper \%ltr_hash;
+
 ## print some information
 if ( $verbose ) {
   foreach (nsort keys %ltr_hash) {
