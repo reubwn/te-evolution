@@ -111,7 +111,7 @@ sub check_progs {
   if (!( $samtools_path )) {
     die "[ERROR] Cannot find samtools in \$PATH\n";
   } else {
-    print STDERR "[INFO] Found blastn at $samtools_path\n";
+    print STDERR "[INFO] Found blastn at $samtools_path\n"; ##
   }
 }
 
