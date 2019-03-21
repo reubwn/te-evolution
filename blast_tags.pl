@@ -99,16 +99,22 @@ if ( $verbose ) {
 
 ## print lefties and righties to file for BLASTing
 foreach (nsort keys %ltr_hash) {
-  my @left_names = @{$ltr_hash{$_}{left_names}} ? @{$ltr_hash{$_}{left_names}} : qw/ 0 / ;
-  my @left_seqs = @{ $ltr_hash{$_}{left_seqs} } unless (!(@{$ltr_hash{$_}{left_seqs}}));
+  my ( @left_names, @left_seqs, @right_names, @right_seqs );
+  if ( (@{$ltr_hash{$_}{left_names}}) && (@{$ltr_hash{$_}{left_seqs}}) ) {
+    @left_names = @{$ltr_hash{$_}{left_names}};
+    @left_seqs = @{$ltr_hash{$_}{left_seqs}};
+    open (my $F, ">$_.lefties.fa") or die $!;
+    for my $i ( 0 .. $#left_names ) {
+      print $F ">$left_names[$i]\n$left_seqs[$i]\n";
+    }
+    close $F;
+  }
+  #  = @{$ltr_hash{$_}{left_names}} ? @{$ltr_hash{$_}{left_names}} : qw/ 0 / ;
+  # my  = @{ $ltr_hash{$_}{left_seqs} } unless (!(@{$ltr_hash{$_}{left_seqs}}));
   # print "$_: ".scalar @{ $ltr_hash{$_}{left_names} }."\n";
   # print "@left_seqs\n";
 
-  open (my $F, ">$_.lefties.fa") or die $!;
-  for my $i ( 0 .. $#left_names ) {
-    print $F ">$left_names[$i]\n$left_seqs[$i]\n";
-  }
-  close $F;
+
 }
 
 
