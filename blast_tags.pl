@@ -116,12 +116,25 @@ sub check_progs {
   }
 }
 
+sub parallel {
+  chomp( my $parallel_path = `which parallel` );
+  my $result = 1;
+  if (!( $parallel_path )) {
+    print STDERR "[INFO] Didn't find parallel in \$PATH, OK\n";
+  } else {
+    print STDERR "[INFO] Found parallel at $parallel_path\n"; ##
+    $result = 0;
+  }
+  return $result;
+}
+
 sub make_blastdbs {
   my $string = $_[0];
   my @split = split ",", $string;
   print STDERR "[INFO] Creating blastdb's from: @split\n";
-  if ( system("parallel &>/dev/null") == 0 ) {
-    if ( system("parallel -j $threads 'makeblastdb -in {} -dbtype nucl' ::: @split") != 0 ) {
+
+  if ( &parallel == 0 ) {
+    if ( system("parallel --dry-run -j $threads 'makeblastdb -in {} -dbtype nucl' ::: @split") != 0 ) {
       die "[ERROR] Something wrong with makeblastdb command\n";
     }
   } else {
