@@ -101,7 +101,7 @@ if ( $verbose ) {
 foreach (nsort keys %ltr_hash) {
   my @left_names = @{ $ltr_hash{$_}{left_names} } unless (scalar @{ $ltr_hash{$_}{left_names} } == 0);
   my @left_seqs = @{ $ltr_hash{$_}{left_seqs} } unless (scalar @{ $ltr_hash{$_}{left_seqs} } == 0);
-  # print "@left_names\n";
+  print "$_: ".scalar @{ $ltr_hash{$_}{left_names} }."\n";
   # print "@left_seqs\n";
 
   open (my $F, ">$_.lefties.fa") or die $!;
