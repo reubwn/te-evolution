@@ -91,15 +91,15 @@ close $SAM;
 ## print some information
 if ( $verbose ) {
   foreach (nsort keys %ltr_hash) {
-    my $lefties = @{$ltr_hash{$_}{left_names}} ? scalar(@{$ltr_hash{$_}{left_names}}) : "0";
-    my $righties = @{$ltr_hash{$_}{right_names}} ? scalar(@{$ltr_hash{$_}{right_names}}) : "0";
+    my $lefties = @{$ltr_hash{$_}{left_names}} ? scalar(@{$ltr_hash{$_}{left_names}}) : 0;
+    my $righties = @{$ltr_hash{$_}{right_names}} ? scalar(@{$ltr_hash{$_}{right_names}}) : 0;
     print STDERR "[INFO] $_ has $lefties left reads and $righties right reads\n";
   }
 }
 
 ## print lefties and righties to file for BLASTing
 foreach (nsort keys %ltr_hash) {
-  my @left_names = @{ $ltr_hash{$_}{left_names} } unless (!(@{$ltr_hash{$_}{left_names}}));
+  my @left_names = @{$ltr_hash{$_}{left_names}} ? @{$ltr_hash{$_}{left_names}} : qw/ 0 / ;
   my @left_seqs = @{ $ltr_hash{$_}{left_seqs} } unless (!(@{$ltr_hash{$_}{left_seqs}}));
   # print "$_: ".scalar @{ $ltr_hash{$_}{left_names} }."\n";
   # print "@left_seqs\n";
