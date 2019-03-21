@@ -102,7 +102,7 @@ if ( $verbose ) {
 ## print lefties and righties to file for BLASTing
 foreach (nsort keys %ltr_hash) {
   my ( @left_names, @left_seqs, @right_names, @right_seqs );
-  if ( (ref $ltr_hash{$_}{left_names}} eq 'ARRAY') && (ref $ltr_hash{$_}{left_seqs}} eq 'ARRAY') ) {
+  if ( (ref $ltr_hash{$_}{left_names} eq 'ARRAY') && (ref $ltr_hash{$_}{left_seqs} eq 'ARRAY') ) {
     @left_names = @{$ltr_hash{$_}{left_names}};
     @left_seqs = @{$ltr_hash{$_}{left_seqs}};
     open (my $F, ">$_.lefties.fa") or die $!;
