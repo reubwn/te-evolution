@@ -54,8 +54,8 @@ check_progs();
 my @databases = split( m/\,/, $db_string );
 print STDERR "[INFO] Creating blastdb's from: @databases\n";
 
-check_blastdbs ( \@databases );
-make_blastdbs ( \@databases );
+@databases = @{ check_blastdbs(\@databases) };
+make_blastdbs( \@databases );
 
 open (my $SAM, "samtools view $sam_infile |") or die $!;
 while (my $line = <$SAM>) {
