@@ -128,24 +128,21 @@ foreach my $query (nsort keys %ltr_hash) {
   }
 
   ## process righties
-  if ( ($ltr_hash{$_}{right_names}) && ($ltr_hash{$_}{right_seqs}) ) {
-    my @right_names = @{$ltr_hash{$_}{left_names}};
-    my @right_seqs = @{$ltr_hash{$_}{left_seqs}};
-    open (my $F, ">$_.lefties.fa") or die $!;
-    for my $i ( 0 .. $#left_names ) {
-      print $F ">$left_names[$i]\n$left_seqs[$i]\n";
-    }
-    close $F;
-  }
-  #  = @{$ltr_hash{$_}{left_names}} ? @{$ltr_hash{$_}{left_names}} : qw/ 0 / ;
-  # my  = @{ $ltr_hash{$_}{left_seqs} } unless (!(@{$ltr_hash{$_}{left_seqs}}));
-  # print "$_: ".scalar @{ $ltr_hash{$_}{left_names} }."\n";
-  # print "@left_seqs\n";
+  # if ( ($ltr_hash{$query}{right_names}) && ($ltr_hash{$query}{right_seqs}) ) {
+  #   my @right_names = @{$ltr_hash{$query}{right_names}};
+  #   my @right_seqs = @{$ltr_hash{$query}{right_seqs}};
+  #
+  #   open (my $F, ">$query.righties.fa") or die $!;
+  #   for my $i ( 0 .. $#right_names ) {
+  #     print $F ">$right_names[$i]\n$right_seqs[$i]\n";
+  #   }
+  #   close $F;
+  # }
 
 
 }
-#
-#
+
+
 # ################### SUBS
 
 sub check_progs {
