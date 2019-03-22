@@ -126,7 +126,7 @@ foreach my $query (nsort keys %ltr_hash) {
       open (my $BLAST, "blastn -num_threads $threads -task megablast -evalue 1e-20 -query $query -db -outfmt '6 std qcovhsp' |") or die $!;
       while (my $line = <$BLAST>) {
         chomp $line;
-        my ($qacc, $sacc, $pident, $length, $mismatch, $gapopen, $qstart, $qend, $sstart, $send, $evalue, $qcovhsp) = split( "\s+", $line );
+        my ($qacc, $sacc, $pident, $length, $mismatch, $gapopen, $qstart, $qend, $sstart, $send, $evalue, $qcovhsp) = split( $line, "\s+" );
 
         if () {
 
