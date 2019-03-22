@@ -23,7 +23,7 @@ OPTIONS [*] = required
 ## input
 my (
   $sam_infile, $db_string,
-  $help, $verbose
+  $help, $verbose, $debug
   );
 ## defaults
 my $overhang_threshold = 50;
@@ -35,7 +35,8 @@ GetOptions (
   'e|overhang:i' => \$overhang_threshold,
   't|threads:i' => \$threads,
   'h|help' => \$help,
-  'v|verbose' => \$verbose
+  'v|verbose' => \$verbose,
+  'debug' => \$debug
   );
 ## help and usage
 die $usage if $help;
@@ -90,7 +91,7 @@ while (my $line = <$SAM>) {
 }
 close $SAM;
 
-print Dumper \%ltr_hash;
+print Dumper \%ltr_hash if ( $debug );
 
 ## print some information
 if ( $verbose ) {
@@ -109,6 +110,9 @@ foreach my $query (nsort keys %ltr_hash) {
     my @left_names = @{$ltr_hash{$query}{left_names}};
     my @left_seqs = @{$ltr_hash{$query}{left_seqs}};
     my @left_cigars = @{$ltr_hash{$query}{left_cigars}};
+    my @left_overhangs = map { m/^(\d+)S/; $1 } @left_cigars;
+    my %left_boundaries; @left_boundaries{@left_names} = @left_overhangs; ##key= seqid; val=cigar
+    print Dumper \%left_boundaries;
 
     ## write to file
     open (my $F, ">$query.lefties.fa") or die $!;
@@ -119,9 +123,14 @@ foreach my $query (nsort keys %ltr_hash) {
 
     ## BLAST vs each database in turn
     foreach my $database (@databases) {
-      open (my $BLAST, "blastn -num_threads $threads -task megablast -evalue 1e-20 -query $query -db -outfmt '6 std qcovus' |") or die $!;
+      open (my $BLAST, "blastn -num_threads $threads -task megablast -evalue 1e-20 -query $query -db -outfmt '6 std qcovhsp' |") or die $!;
       while (my $line = <$BLAST>) {
+        chomp $line;
+        my ($qacc, $sacc, $pident, $length, $mismatch, $gapopen, $qstart, $qend, $sstart, $send, $evalue, $qcovhsp) = split( "\s+", $line );
 
+        if () {
+
+        }
       }
     }
 
