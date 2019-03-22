@@ -128,9 +128,9 @@ foreach my $query (nsort keys %ltr_hash) {
         chomp $line;
         my ($qacc, $sacc, $pident, $length, $mismatch, $gapopen, $qstart, $qend, $sstart, $send, $evalue, $qcovhsp) = split( m/\s+/, $line );
 
-        if () {
-
-        }
+        # if () {
+        #
+        # }
       }
     }
 
