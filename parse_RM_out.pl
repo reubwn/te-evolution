@@ -16,9 +16,9 @@ my $usage = "
 SYNOPSIS
 
 OPTIONS [*] = required
-  -i|--infile [FILE] : RepeatMasker out file (*.out)
+  -i|--infile [FILE] : RepeatMasker out file (*.out) [accepts .gz]
   -f|--fasta  [FILE] : Genome fasta file
-  -g|--glob          : Will glob all *.out files and attempt to process them
+  -g|--glob          : Will glob all *.out[.gz] files and attempt to process them
   -n|--nocondense    : Classify based on subfamilies [family]
   -h|--help          : this message
 
@@ -47,6 +47,10 @@ GetOptions (
 die $usage if $help;
 print STDERR "[####] TE-EVOLUTION parse_RM_out.pl\n";
 print STDERR "[####] " . `date`;
+
+## custom order to print results
+my @order = qw/ Unknown DNA RC LTR LINE SINE /;
+my %order_map = map { $order[$_] => $_ } 0 .. $#order;
 
 ###############
 ## single files
@@ -107,7 +111,12 @@ if ($RM_infile) {
   my %repeats_hash;
   my %genome_lengths_hash;
 
-  my @files = glob "*.out";
+  my @files;
+  if ( $compressed ) {
+    @files = glob "*.out.gz";
+  } else {
+    @files = glob "*.out";
+  }
   print STDERR "[####] Number of RM files: ".@files."\n";
 
   foreach my $file (@files) {
@@ -117,17 +126,26 @@ if ($RM_infile) {
     (my $fasta_infile = $file) =~ s/\.out//;
     my $genome_length;
 
-    open (my $FASTA, $fasta_infile) or die $!;
-    while (<$FASTA>) {
-      if ($_ =~ m/^\>/) {
-        next;
-      } else {
-        chomp;
-        $genome_length += length ($_);
+    if ( $mapping_file ) {
+      open (my $MAP, $mapping_file) or die $!;
+      while (<$MAP>) {
+        my @F = split (m/\s+/, $_);
+        print STDERR "[####] Genome length: $F[1] bp\n";
+        $genome_lengths_hash{$F[0]} = $F[1];
       }
+    } else {
+      open (my $FASTA, $fasta_infile) or die $!;
+      while (<$FASTA>) {
+        if ($_ =~ m/^\>/) {
+          next;
+        } else {
+          chomp;
+          $genome_length += length ($_);
+        }
+      }
+      print STDERR "[####] Genome length: $genome_length bp\n";
+      $genome_lengths_hash{$file} = $genome_length;
     }
-    print STDERR "[####] Genome length: $genome_length bp\n";
-    $genome_lengths_hash{$file} = $genome_length;
 
     open (my $IN, $file) or die $!;
     while (<$IN>) {
@@ -151,7 +169,7 @@ if ($RM_infile) {
   }
 
   print STDOUT join ("\t", "repeat", nsort keys %files_hash) . "\n";
-  foreach my $repeat (nsort keys %repeats_hash) {
+  foreach my $repeat (sort by_order keys %repeats_hash) {
     print STDOUT "$repeat\t";
     foreach my $file (nsort keys %files_hash) {
       my %print_hash = %{ $files_hash{$file} };
@@ -174,5 +192,7 @@ sub trim {
   $s =~ s/^\s+|\s+$//g;
   return $s
 }
+
+sub by_order { $order_map{$a} <=> $order_map{$b} }
 
 __END__
