@@ -16,9 +16,9 @@ my $usage = "
 SYNOPSIS
 
 OPTIONS [*] = required
-  -i|--infile [FILE] : RepeatMasker out file (*.out) [accepts .gz]
+  -i|--infile [FILE] : RepeatMasker out file (*.out)
   -f|--fasta  [FILE] : Genome fasta file
-  -g|--glob          : Will glob all *.out[.gz] files and attempt to process them
+  -g|--glob          : Will glob all *.out files and attempt to process them
   -n|--nocondense    : Classify based on subfamilies [family]
   -h|--help          : this message
 
@@ -111,12 +111,7 @@ if ($RM_infile) {
   my %repeats_hash;
   my %genome_lengths_hash;
 
-  my @files;
-  if ( $compressed ) {
-    @files = glob "*.out.gz";
-  } else {
-    @files = glob "*.out";
-  }
+  my @files = glob "*.out";
   print STDERR "[####] Number of RM files: ".@files."\n";
 
   foreach my $file (@files) {
