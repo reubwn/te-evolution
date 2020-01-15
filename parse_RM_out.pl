@@ -121,26 +121,18 @@ if ($RM_infile) {
     (my $fasta_infile = $file) =~ s/\.out//;
     my $genome_length;
 
-    if ( $mapping_file ) {
-      open (my $MAP, $mapping_file) or die $!;
-      while (<$MAP>) {
-        my @F = split (m/\s+/, $_);
-        print STDERR "[####] Genome length: $F[1] bp\n";
-        $genome_lengths_hash{$F[0]} = $F[1];
+    open (my $FASTA, $fasta_infile) or die $!;
+    while (<$FASTA>) {
+      if ($_ =~ m/^\>/) {
+        next;
+      } else {
+        chomp;
+        $genome_length += length ($_);
       }
-    } else {
-      open (my $FASTA, $fasta_infile) or die $!;
-      while (<$FASTA>) {
-        if ($_ =~ m/^\>/) {
-          next;
-        } else {
-          chomp;
-          $genome_length += length ($_);
-        }
-      }
-      print STDERR "[####] Genome length: $genome_length bp\n";
-      $genome_lengths_hash{$file} = $genome_length;
     }
+    print STDERR "[####] Genome length: $genome_length bp\n";
+    $genome_lengths_hash{$file} = $genome_length;
+
 
     open (my $IN, $file) or die $!;
     while (<$IN>) {
