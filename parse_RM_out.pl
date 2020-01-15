@@ -158,7 +158,7 @@ if ($RM_infile) {
   }
 
   print STDOUT join ("\t", "repeat", nsort keys %files_hash) . "\n";
-  foreach my $repeat (sort { sort_by_pos } keys %repeats_hash) {
+  foreach my $repeat (sort sort_by_pos keys %repeats_hash) {
     print STDOUT "$repeat\t";
     foreach my $file (nsort keys %files_hash) {
       my %print_hash = %{ $files_hash{$file} };
