@@ -50,12 +50,13 @@ print STDERR "[####] " . `date`;
 
 ## custom order to print results
 my @sort_order = qw (
- Unknown Other DNA DNA/Academ DNA/CMC DNA/Crypton DNA/Dada DNA/Ginger DNA/IS3EU
- DNA/IS5 DNA/Kolobok DNA/MULE DNA/Maverick DNA/Merlin DNA/P DNA/PIF DNA/PiggyBac
- DNA/Sola DNA/TcMar DNA/Zator DNA/hAT RC/Helitron LTR LTR/Copia LTR/DIRS LTR/Gypsy
- LTR/Juno LTR/Mag LTR/Ngaro LTR/Pao LTR/TelKA LINE/CR1 LINE/CRE LINE/Dong LINE/I
- LINE/L1 LINE/L2 LINE/Penelope LINE/Proto2 LINE/R1 LINE/R2 LINE/RTE LINE/Rex
- LINE/Soliton SINE SINE/5S SINE/I SINE/R2 SINE/tRNA
+ Unknown Other
+ DNA DNA/Academ DNA/CMC DNA/Crypton DNA/Dada DNA/Ginger DNA/IS3EU DNA/IS5 DNA/Kolobok DNA/MULE DNA/Maverick DNA/Merlin DNA/P DNA/PIF DNA/PiggyBac DNA/Sola DNA/TcMar DNA/Zator DNA/hAT
+ RC RC/Helitron
+ LTR LTR/Copia LTR/DIRS LTR/Gypsy LTR/Juno LTR/Mag LTR/Ngaro LTR/Pao LTR/TelKA
+ LINE/Penelope
+ LINE LINE/CR1 LINE/CRE LINE/Dong LINE/I LINE/L1 LINE/L2 LINE/Proto2 LINE/R1 LINE/R2 LINE/RTE LINE/Rex LINE/Soliton
+ SINE SINE/5S SINE/I SINE/R2 SINE/tRNA
  tRNA rRNA Satellite Simple_repeat Low_complexity ARTEFACT RNA Retroposon repeat
 );
 
