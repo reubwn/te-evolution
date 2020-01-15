@@ -180,6 +180,6 @@ sub trim {
   return $s
 }
 
-sub by_order { $order_map{$a} <=> $order_map{$b} }
+sub by_order { $order_map{$a} cmp $order_map{$b} }
 
 __END__
