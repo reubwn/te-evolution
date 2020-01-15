@@ -158,7 +158,7 @@ if ($RM_infile) {
   }
 
   print STDOUT join ("\t", "repeat", nsort keys %files_hash) . "\n";
-  foreach my $repeat (sort sort_by_pos keys %repeats_hash) {
+  foreach my $repeat (sort by_order keys %repeats_hash) {
     print STDOUT "$repeat\t";
     foreach my $file (nsort keys %files_hash) {
       my %print_hash = %{ $files_hash{$file} };
@@ -182,23 +182,10 @@ sub trim {
   return $s
 }
 
-sub sort_by_pos {
-
-   my @a = split //, $a;
-   my @b = split //, $b;
-
-   #iterate one letter at a time, using 'shift' to take it off the front
-   #of the array.
-   while ( @a and @b ) {
-     my $result = $position_of{shift @a} <=> $position_of{shift @b};
-     #result is 'true' if it's "-1" or "1" which indicates relative position.
-     # 0 is false, and that'll cause the next loop iteration to test the next
-     #letter-pair
-     return $result if $result;
-   }
-   #return a value based on remaining length - longest 'string' will sort last;
-   #That's so "AAA" comparing with "AA" comparison actually work,
-   return scalar @a <=> scalar @b;
+sub by_order {
+  my @a = split m/\//, $a;
+  my @b = split m/\//, $b;
+  $position_of{$a[0]} <=> $position_of{$b[0]};
 }
 
 
