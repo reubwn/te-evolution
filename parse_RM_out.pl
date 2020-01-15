@@ -193,9 +193,9 @@ sub trim {
 }
 
 sub by_order {
-  my @a = split m/\//, $a;
-  my @b = split m/\//, $b;
-  $position_of{$a[0]} <=> $position_of{$b[0]};
+#  my @a = split m/\//, $a;
+#  my @b = split m/\//, $b;
+  $position_of{$a} <=> $position_of{$b};
 }
 
 
