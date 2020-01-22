@@ -16,11 +16,12 @@ my $usage = "
 SYNOPSIS
 
 OPTIONS [*] = required
-  -i|--infile [FILE] : RepeatMasker out file (*.out)
-  -f|--fasta  [FILE] : Genome fasta file
-  -g|--glob          : Will glob all *.out files and attempt to process them
-  -n|--nocondense    : Classify based on subfamilies [family]
-  -h|--help          : this message
+  -i|--infile  [FILE]* : RepeatMasker out file (*.out)
+  -f|--fasta   [FILE]* : Genome fasta file
+  -m|--mapping [FILE]  : Mapping file with genome sizes for each file
+  -g|--glob            : Will glob all *.out files and attempt to process them
+  -n|--nocondense      : Classify based on subfamilies [family]
+  -h|--help            : this message
 
 OUTPUTS
 \n";
@@ -29,16 +30,18 @@ OUTPUTS
 my (
   $RM_infile,
   $fasta_infile,
+  $mapping_infile,
   $glob,
   $no_condense,
   $help, $debug
 );
 ## defaults
-my $outprefix = "plot_RM";
+my $outprefix = "repeats_tab";
 
 GetOptions (
   'i|infile=s' => \$RM_infile,
   'f|fasta:s' => \$fasta_infile,
+  'm|mapping:s' => \$mapping_infile,
   'g|glob' => \$glob,
   'h|help' => \$help,
   'debug' => \$debug
@@ -59,10 +62,12 @@ my @sort_order = qw (
  SINE SINE/5S SINE/I SINE/R2 SINE/tRNA
  tRNA rRNA Satellite Simple_repeat Low_complexity ARTEFACT RNA Retroposon repeat
 );
-
 my $count = 0;
 my %position_of;
 $position_of{$_} = $count++ for @sort_order;
+
+## open outfile
+open (my $OUTFILE, ">".$outprefix.".txt") or die $!;
 
 ###############
 ## single files
@@ -83,6 +88,7 @@ if ($RM_infile) {
         $genome_length += length ($_);
       }
     }
+    close $FASTA;
     print STDERR "[####] Genome length: $genome_length bp\n";
   }
 
@@ -105,11 +111,11 @@ if ($RM_infile) {
   close $IN;
 
   foreach (sort { "\L$a" cmp "\L$b" || $print_hash{$b} <=> $print_hash{$a} } keys %print_hash) {
-    print STDOUT join ("\t", $_, $print_hash{$_});
+    print $OUTFILE join ("\t", $_, $print_hash{$_});
     if ($fasta_infile) {
-      print "\t" . (($print_hash{$_}/$genome_length)*100) . "\n";
+      print $OUTFILE "\t" . (($print_hash{$_}/$genome_length)*100) . "\n";
     } else {
-      print "\n";
+      print $OUTFILE "\n";
     }
   }
 
@@ -126,6 +132,17 @@ if ($RM_infile) {
   my @files = glob "*.out";
   print STDERR "[####] Number of RM files: ".@files."\n";
 
+  if ( $mapping_infile ) {
+    open (my $MAP, $mapping_infile) or die $!;
+    while (<$MAP>) {
+      chomp;
+      my @F = split (m/\s+/, $_);
+      ## filename (*.out) in col1; genome span in col2
+      $genome_lengths_hash{$F[0]} = $F[1];
+    }
+    close $MAP;
+  }
+
   foreach my $file (@files) {
     print STDERR "[####] Working on file: $file\n";
     ## STUFF
@@ -133,18 +150,24 @@ if ($RM_infile) {
     (my $fasta_infile = $file) =~ s/\.out//;
     my $genome_length;
 
-    open (my $FASTA, $fasta_infile) or die $!;
-    while (<$FASTA>) {
-      if ($_ =~ m/^\>/) {
-        next;
-      } else {
-        chomp;
-        $genome_length += length ($_);
+    ## open fasta only if mapping file not provided
+    unless ( $mapping_infile ) {
+      open (my $FASTA, $fasta_infile) or die $!;
+      while (<$FASTA>) {
+        if ($_ =~ m/^\>/) {
+          next;
+        } else {
+          chomp;
+          $genome_length += length ($_);
+        }
       }
-    }
-    print STDERR "[####] Genome length: $genome_length bp\n";
-    $genome_lengths_hash{$file} = $genome_length;
+      close $FASTA;
 
+      print STDERR "[####] Genome length: $genome_length bp\n";
+      $genome_lengths_hash{$file} = $genome_length;
+  } else {
+    print STDERR "[####] Genome length: $genome_lengths_hash{$file} bp\n";
+  }
 
     open (my $IN, $file) or die $!;
     while (<$IN>) {
@@ -167,22 +190,22 @@ if ($RM_infile) {
     $files_hash{$file} = \%print_hash;
   }
 
-  print STDOUT join ("\t", "repeat", nsort keys %files_hash) . "\n";
-  foreach my $repeat (sort by_order keys %repeats_hash) {
-    print STDOUT "$repeat\t";
+  print $OUTFILE join ("\t", "repeat", nsort keys %files_hash) . "\n";
+  foreach my $repeat (nsort keys %repeats_hash) {
+    print $OUTFILE "$repeat\t";
     foreach my $file (nsort keys %files_hash) {
       my %print_hash = %{ $files_hash{$file} };
       if ($print_hash{$repeat} ) {
-        print STDOUT (($print_hash{$repeat}/$genome_lengths_hash{$file})*100) . "\t";
+        print $OUTFILE (($print_hash{$repeat}/$genome_lengths_hash{$file})*100) . "\t";
       } else {
-        print STDOUT "0\t";
+        print $OUTFILE "0\t";
       }
     }
-    print STDOUT "\n";
+    print $OUTFILE "\n";
   }
 }
 
-
+close $OUTFILE;
 
 ############ SUBS
 
