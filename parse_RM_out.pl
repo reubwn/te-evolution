@@ -19,7 +19,7 @@ SYNOPSIS
 
 OPTIONS [*] = required
   -m|--mapping [FILE]*  : mapping file with genome sizes for each file
-  -z|--gz               : gunzip any *.out.gz files prior to glob
+  -z|--gz               : files are in .gz format (will recompress them after running)
   -n|--nocondense       : classify based on subfamilies [family]
   -h|--help             : this message
 \n";
