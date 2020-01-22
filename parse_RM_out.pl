@@ -18,10 +18,10 @@ SYNOPSIS
   Requires a genome span mapping file in 'filename [TAB] genome_size' format.
 
 OPTIONS [*] = required
-  -m|--mapping [FILE]  : mapping file with genome sizes for each file
-  -z|--gz              : gunzip any *.out.gz files prior to glob
-  -n|--nocondense      : classify based on subfamilies [family]
-  -h|--help            : this message
+  -m|--mapping [FILE]*  : mapping file with genome sizes for each file
+  -z|--gz               : gunzip any *.out.gz files prior to glob
+  -n|--nocondense       : classify based on subfamilies [family]
+  -h|--help             : this message
 \n";
 
 ## input
