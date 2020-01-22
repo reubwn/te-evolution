@@ -47,9 +47,6 @@ die $usage unless ( $mapping_infile );
 print STDERR "[####] TE-EVOLUTION parse_RM_out.pl\n";
 print STDERR "[####] " . `date`;
 
-## open outfile
-open (my $OUTFILE, ">".$outprefix.".txt") or die $!;
-
 ## gunzip the files
 if ( $gzip ) {
   my @gzipped_files = glob "*.out.gz";
@@ -131,7 +128,10 @@ foreach my $file (@files) {
   $files_hash{$file} = \%print_hash;
 }
 
+## open outfile
+open (my $OUTFILE, ">".$outprefix.".txt") or die $!;
 print $OUTFILE join ("\t", "repeat", nsort keys %files_hash) . "\n";
+## print results
 foreach my $repeat (nsort keys %repeats_hash) {
   print $OUTFILE "$repeat\t";
   foreach my $file (nsort keys %files_hash) {
