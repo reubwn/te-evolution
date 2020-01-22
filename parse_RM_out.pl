@@ -80,6 +80,9 @@ while (<$MAP>) {
   if ($F[0] =~ m/.gz$/) {
     $F[0] =~ s/.gz$//; ## remove the .gz from the filename!
   }
+  if ($F[1] =~ m/,/) {
+    $F[1] =~ s/,//g; ## remove commas in numbers
+  }
   ## filename (*.out) in col1; genome span in col2
   $genome_lengths_hash{$F[0]} = $F[1];
 }
