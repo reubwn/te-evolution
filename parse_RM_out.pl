@@ -76,6 +76,9 @@ open (my $MAP, $mapping_infile) or die $!;
 while (<$MAP>) {
   chomp;
   my @F = split (m/\s+/, $_);
+  if ($F[0] =~ m/.gz$/) {
+    $F[0] =~ s/.gz$//; ## remove the .gz from the filename!
+  }
   ## filename (*.out) in col1; genome span in col2
   $genome_lengths_hash{$F[0]} = $F[1];
 }
