@@ -35,10 +35,11 @@ my (
 my $outprefix = "repeats_tab";
 
 GetOptions (
-  'm|mapping=s' => \$mapping_infile,
-  'z|gz'        => \$gzip,
-  'h|help'      => \$help,
-  'debug'       => \$debug
+  'm|mapping=s'  => \$mapping_infile,
+  'z|gz'         => \$gzip,
+  'h|help'       => \$help,
+  'n|nocondense' => \$no_condense,
+  'debug'        => \$debug
 );
 ## help and usage
 die $usage if $help;
