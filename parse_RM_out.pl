@@ -51,12 +51,16 @@ print STDERR "[####] " . `date`;
 if ( $gzip ) {
   my @gzipped_files = glob "*.out.gz";
   print STDERR "[INFO] Gunzip on ".scalar(@gzipped_files)." files\n";
-  if (system ("parallel --help &>/dev/null") != 0){
-    foreach my $file (@gzipped_files) {
-      `gunzip $file`;
+  if (scalar(@gzipped_files) > 0) {
+    if (system ("parallel --help &>/dev/null") != 0){
+      foreach my $file (@gzipped_files) {
+        `gunzip $file`;
+      }
+    } else {
+      `ls *.out.gz | parallel gunzip {}`;
     }
   } else {
-    `ls *.out.gz | parallel gunzip {}`;
+    print STDERR "[INFO] No files to gunzip!\n";
   }
 }
 
