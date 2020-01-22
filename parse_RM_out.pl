@@ -90,7 +90,7 @@ while (<$MAP>) {
 close $MAP;
 
 foreach my $file (@files) {
-  print STDERR "[INFO] Working on file: $file\n";
+  print STDERR "[INFO] Working on file: $file ";
   ## STUFF
   my %print_hash;
   (my $fasta_infile = $file) =~ s/\.out//;
@@ -112,7 +112,7 @@ foreach my $file (@files) {
     print STDERR "[INFO] Genome length: $genome_length bp\n";
     $genome_lengths_hash{$file} = $genome_length;
 } else {
-  print STDERR "[INFO] Genome length: $genome_lengths_hash{$file} bp\n";
+  print STDERR "($genome_lengths_hash{$file} bp)\n";
 }
 
   open (my $IN, $file) or die $!;
