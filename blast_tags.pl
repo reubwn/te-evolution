@@ -13,6 +13,10 @@ use Getopt::Long qw(:config no_ignore_case);
 ## It would be better to do this within the script, so you can just feed it a unprocessed BAM
 ## and the relevant reads are pulled straight from that
 
+## furthermore, it currently just blasts all of the reads vs the assemblies...
+## better would be to make it non-redundant - ie. pick a read spanning >50 (-g) into
+## genome region; chuck any others that are identical across the same region (SOMEHOW?)
+
 my $usage = "
 SYNOPSIS
 

@@ -13,8 +13,8 @@ SYNOPSIS
 OPTIONS [*] = required
   -i|--in        [FILE] : list of sequence names to analyse (TXT) [*]
   -s|--scaffolds [FILE] : scaffolds encoding sequences (FASTA) [*]
-  -g|--gff       [FILE] : GFF file providing locations of sequences on scaffolds (GFF) [*]
-  -a|--annot     [FILE] : annotation file from InterProScan (TSV)
+  -g|--gff       [FILE] : GFF gene location file (GFF) [*]
+  -a|--annot     [FILE] : TSV gene annotation file from InterProScan (TSV)
   -t|--telo    [STRING] : telomeric repeat string to search for (default TGTGGG)
   -x|--telox      [INT] : number of repeat units to identify before classifying as a match (default 2)
   -z|--mismatch   [INT] : number of mismatches in --telo to allow (default 1)
