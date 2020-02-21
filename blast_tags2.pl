@@ -69,7 +69,7 @@ $IN_path =~ s/\/$//;
 print STDERR "[####] TE-EVOLUTION blast_tags.pl\n";
 print STDERR "[####] " . `date`;
 ##
-my ( %ltr_hash, %results );
+my ( %ltr_hash, %top_hits, %final_results );
 
 ## check system for required programs
 check_progs();
@@ -112,8 +112,8 @@ foreach my $fasta_file (nsort @fasta_files) {
   while (<$GREP>) {
     chomp;
     (my $ltr_id = $_) =~ s/\>//;
-    $ltr_hash{$repeat_id}{'leftie'} = $ltr_id if ($ltr_id =~ m/:L:/);
-    $ltr_hash{$repeat_id}{'rightie'} = $ltr_id if ($ltr_id =~ m/:R:/);
+    $ltr_hash{$repeat_id}{L} = $ltr_id if ($ltr_id =~ m/:L:/);
+    $ltr_hash{$repeat_id}{R} = $ltr_id if ($ltr_id =~ m/:R:/);
   }
 
   ## BLAST vs each database in turn
@@ -162,24 +162,23 @@ foreach my $fasta_file (nsort @fasta_files) {
 }
 close $BLAST;
 
-
-
-
-
-
-
 ## process annotated blast results
 ## want to save the 'best' score per query-subject pair only
-open (my $ANNOT_BLAST, $blast_file) or die $!;
+open (my $ANNOT_BLAST, "sort -k14,14V -k15,15V -k16,16V -k19,19n $blast_file |") or die $!;
 while (my $line = <$ANNOT_BLAST >) {
   chomp $line;
-  my @F = split ( m/\s+/, $line );
-  if ( !($results{$F[0]}{$F[14]}) ) { ## first time
-    $results{$F[0]}{$F[14]} = $F[17]; ## key= TE-tag name; val= %{ key= database name; val= score }
-  } else { ## subsequent
-    ## keep highest score
-    $results{$F[0]}{$F[14]} = $F[17] if ($F[17] > $results{$F[0]}{$F[14]});
-  }
+  my @F = split ( m/\t/, $line );
+  $top_hits{$F[13]}{$F[14]}{$F[15]}{qcovhsp} = $F[12];
+  $top_hits{$F[13]}{$F[14]}{$F[15]}{mismatches} = $F[4];
+  #
+  #
+  #
+  # if ( !($results{$F[0]}{$F[14]}) ) { ## first time
+  #   $results{$F[0]}{$F[14]} = $F[17]; ## key= TE-tag name; val= %{ key= database name; val= score }
+  # } else { ## subsequent
+  #   ## keep highest score
+  #   $results{$F[0]}{$F[14]} = $F[17] if ($F[17] > $results{$F[0]}{$F[14]});
+  # }
 }
 close $ANNOT_BLAST;
 
@@ -188,7 +187,7 @@ close $ANNOT_BLAST;
 my $table_file = $OUT_prefix . "_table.txt";
 open (my $TAB, ">$table_file") or die $!;
 if ( $mark ) {
-  print $TAB "ltr_id\tposition\tqacc\t";
+  print $TAB "repeat_id\tposition\tqacc\t";
   foreach ( nsort values %databases_names ) {
     if ( $_ eq $mark ) { ## convoluted way of printing a couple of asterisks, but heyho
       print $TAB "**$_\t";
@@ -198,18 +197,28 @@ if ( $mark ) {
   }
   print $TAB "\n";
 } else {
-  print $TAB join ( "\t", "ltr_id","position","qacc", nsort values %databases_names ) . "\n"; ## print header
+  print $TAB join ( "\t", "repeat_id","position","qacc", nsort values %databases_names ) . "\n"; ## print header
 }
 
 foreach my $ltr_id ( nsort keys %ltr_hash ) {
   ## iterate thru ALL ltrs, not just the ones with blast hits
   print $TAB "$ltr_id"; ## print ltr_id
   foreach my $db ( nsort values %databases_names ) {
-    if ( $results{$ltr_id}{$db} ) { ## if exists, print score
-      print $TAB "\t$results{$ltr_id}{$db}";
+    my $final_score;
+    if ( ($top_hits{$ltr_id}{$db}{L}) && ($top_hits{$ltr_id}{$db}{R}) ) { ## if hit exists for both L && R
+      $final_score = (($top_hits{$ltr_id}{$db}{L}{qcovhsp} - $top_hits{$ltr_id}{$db}{L}{mismatches}) + ($top_hits{$ltr_id}{$db}{R}{qcovhsp} - $top_hits{$ltr_id}{$db}{R}{mismatches})) / 200;
+      # print $TAB "\t$final_score";
+    } elsif ( ($top_hits{$ltr_id}{$db}{L}) && !($top_hits{$ltr_id}{$db}{R}) ) {
+      $final_score = ($top_hits{$ltr_id}{$db}{L}{qcovhsp} - $top_hits{$ltr_id}{$db}{L}{mismatches}) / 200;
+      # print $TAB "\t$final_score";
+    } elsif ( !($top_hits{$ltr_id}{$db}{L}) && ($top_hits{$ltr_id}{$db}{R}) ) {
+      $final_score = ($top_hits{$ltr_id}{$db}{R}{qcovhsp} - $top_hits{$ltr_id}{$db}{R}{mismatches}) / 200;
+      # print $TAB "\t$final_score";
     } else { ## else print 0
-      print $TAB "\t0";
+      $final_score = 0;
+      # print $TAB "\t0";
     }
+    print $TAB "\t$final_score";
   }
   print $TAB "\n";
 
