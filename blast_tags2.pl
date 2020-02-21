@@ -194,19 +194,19 @@ if ( $mark ) {
   print $TAB join ( "\t", "repeat_id","position","qacc", nsort values %databases_names ) . "\n"; ## print header
 }
 
-foreach my $ltr_id ( nsort keys %ltr_hash ) {
+foreach my $repeat_id ( nsort keys %ltr_hash ) {
   ## iterate thru ALL ltrs, not just the ones with blast hits
-  print $TAB "$ltr_id"; ## print ltr_id
-  foreach my $db ( nsort values %databases_names ) {
+  print $TAB $repeat_id; ## print ltr_id
+  foreach my $database ( nsort values %databases_names ) {
     my $final_score;
-    if ( ($top_hits{$ltr_id}{$db}{L}) && ($top_hits{$ltr_id}{$db}{R}) ) { ## if hit exists for both L && R
-      $final_score = (($top_hits{$ltr_id}{$db}{L}{qcovhsp} - $top_hits{$ltr_id}{$db}{L}{mismatches}) + ($top_hits{$ltr_id}{$db}{R}{qcovhsp} - $top_hits{$ltr_id}{$db}{R}{mismatches})) / 200;
+    if ( ($top_hits{$repeat_id}{$database}{L}{qcovhsp}) && ($top_hits{$repeat_id}{$database}{R}{qcovhsp}) ) { ## if hit exists for both L && R
+      $final_score = (($top_hits{$repeat_id}{$database}{L}{qcovhsp} - $top_hits{$repeat_id}{$database}{L}{mismatches}) + ($top_hits{$repeat_id}{$database}{R}{qcovhsp} - $top_hits{$repeat_id}{$database}{R}{mismatches})) / 200;
       # print $TAB "\t$final_score";
-    } elsif ( ($top_hits{$ltr_id}{$db}{L}) && !($top_hits{$ltr_id}{$db}{R}) ) {
-      $final_score = ($top_hits{$ltr_id}{$db}{L}{qcovhsp} - $top_hits{$ltr_id}{$db}{L}{mismatches}) / 200;
+    } elsif ( ($top_hits{$repeat_id}{$database}{L}{qcovhsp}) && !($top_hits{$repeat_id}{$database}{R}{qcovhsp}) ) {
+      $final_score = ($top_hits{$repeat_id}{$database}{L}{qcovhsp} - $top_hits{$repeat_id}{$database}{L}{mismatches}) / 200;
       # print $TAB "\t$final_score";
-    } elsif ( !($top_hits{$ltr_id}{$db}{L}) && ($top_hits{$ltr_id}{$db}{R}) ) {
-      $final_score = ($top_hits{$ltr_id}{$db}{R}{qcovhsp} - $top_hits{$ltr_id}{$db}{R}{mismatches}) / 200;
+    } elsif ( !($top_hits{$repeat_id}{$database}{L}{qcovhsp}) && ($top_hits{$repeat_id}{$database}{R}{qcovhsp}) ) {
+      $final_score = ($top_hits{$repeat_id}{$database}{R}{qcovhsp} - $top_hits{$repeat_id}{$database}{R}{mismatches}) / 200;
       # print $TAB "\t$final_score";
     } else { ## else print 0
       $final_score = 0;
@@ -215,7 +215,6 @@ foreach my $ltr_id ( nsort keys %ltr_hash ) {
     print $TAB "\t$final_score";
   }
   print $TAB "\n";
-
   print $TAB "###\n" if ( $eyeball );
 
   # ## ~~~~~~~~~~~~~
