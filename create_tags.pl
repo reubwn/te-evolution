@@ -57,7 +57,7 @@ print STDERR "[INFO] Retrieved ".commify(scalar(keys %scaffolds_hash))." sequenc
 
 ## parse GFF3 file for LTR positions
 my $count = 1;
-my %seen_already;
+my (%seen_already, %repeat_regions);
 my ($repeat_id, $ltr_id);
 open (my $GFF, $in_gfffile) or die $!;
 while (<$GFF>) {
@@ -68,6 +68,7 @@ while (<$GFF>) {
   if ( $F[2] eq "repeat_region" ) {
     if ($F[8] =~ m/ID=(\S+)/) {
       $repeat_id = $1;
+      $repeat_regions{$repeat_id} = $F[0];
     }
   }
   ## get TE tag sequences
@@ -104,6 +105,8 @@ while (<$GFF>) {
   }
 }
 close $GFF;
+print STDERR "[INFO] Found ".commify(scalar(keys %repeat_regions))." LTR regions\n";
+print STDERR "[INFO] Finished! ".`date`;
 
 # my $usage = "
 # SYNOPSIS
