@@ -133,27 +133,27 @@ foreach my $fasta_file (nsort @fasta_files) {
       if ( $qcovhsp == 100 ) { ## successful BLAST alignment across entire tag
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 1;
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$repeat_id,$ltr_pos,$databases_names{$database},"full","PASS",$score) . "\n";
+        print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},$ltr_pos,"full","PASS",$score) . "\n";
         next LINE;
 
       } elsif ( $qcovhsp > 80 ) { ## successful match spanning at least 30 bp over TE/genome boundary
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0.8;
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$repeat_id,$ltr_pos,$databases_names{$database},"partial","PASS",$score) . "\n";
+        print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},$ltr_pos,"partial","PASS",$score) . "\n";
         next LINE;
 
       } elsif ( $qcovhsp > 50 ) { ## marginal match spanning at least 1 bp over TE/genome boundary
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0.5;
         $score = 0 if ( $collapse_marginal_scores ); ## collapse marginal calls to score = 0
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$repeat_id,$ltr_pos,$databases_names{$database},"partial","MARGINAL",$score) . "\n";
+        print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},$ltr_pos,"partial","MARGINAL",$score) . "\n";
         next LINE;
 
       } else { ## match that does not span TE/genome boundary by any overlap
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0;
         $score = 0 if ( $collapse_marginal_scores ); ## collapse marginal calls to score = 0
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$repeat_id,$ltr_pos,$databases_names{$database},"partial","FAIL",$score) . "\n";
+        print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},$ltr_pos,"partial","FAIL",$score) . "\n";
         next LINE;
       }
     }
