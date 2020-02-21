@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+use File::Basename;
 use Sort::Naturally;
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -106,7 +107,7 @@ print STDERR "[INFO] There are ".scalar(@fasta_files)." files in '$IN_path'\n";
 foreach my $fasta_file (nsort @fasta_files) {
 
   ## load $ltr_hash
-  (my $repeat_id = $fasta_file) =~ s/\.[^.]+$//;
+  (my $repeat_id = $fasta_file) =~ s{^.*/|\.[^.]+$}{}g;
   open (my $GREP, "grep '>' $fasta_file |") or die $!;
   while (<$GREP>) {
     chomp;
