@@ -169,15 +169,15 @@ open (my $ANNOT_BLAST, "sort -k14,14V -k15,15V -k16,16V -k19,19n $blast_file |")
 while (my $line = <$ANNOT_BLAST>) {
   chomp $line;
   my @F = split ( m/\t/, $line );
-  if ( scalar(@F) == 19 ) {
-    print STDERR "Here?\n";
+  # if ( scalar(@F) == 19 ) {
+
     $top_hits{$F[13]}{$F[14]}{$F[15]}{qcovhsp} = $F[12];
     $top_hits{$F[13]}{$F[14]}{$F[15]}{mismatches} = $F[4];
-  }
+  # }
 }
 close $ANNOT_BLAST;
 
-print STDERR Dumper(\%top_hits);
+# print STDERR Dumper(\%top_hits);
 
 ## print condensed results
 ## to show presence / absence of tags across all databases
@@ -202,18 +202,18 @@ foreach my $repeat_id ( nsort keys %ltr_hash ) {
   print $TAB $repeat_id; ## print ltr_id
   foreach my $database ( nsort values %databases_names ) {
     my $final_score;
-    if ( ($top_hits{$repeat_id}{$database}{L}{qcovhsp}) && ($top_hits{$repeat_id}{$database}{R}{qcovhsp}) ) { ## if hit exists for both L && R
+    if ( ($top_hits{$repeat_id}{$database}{L}) && ($top_hits{$repeat_id}{$database}{R}) ) { ## if hit exists for both L && R
       $final_score = (($top_hits{$repeat_id}{$database}{L}{qcovhsp} - $top_hits{$repeat_id}{$database}{L}{mismatches}) + ($top_hits{$repeat_id}{$database}{R}{qcovhsp} - $top_hits{$repeat_id}{$database}{R}{mismatches})) / 200;
-      print STDERR "Ever get in here?\n";
-    } elsif ( ($top_hits{$repeat_id}{$database}{L}{qcovhsp}) && !($top_hits{$repeat_id}{$database}{R}{qcovhsp}) ) {
+
+    } elsif ( ($top_hits{$repeat_id}{$database}{L}) && !($top_hits{$repeat_id}{$database}{R}) ) { ## or only L
       $final_score = ($top_hits{$repeat_id}{$database}{L}{qcovhsp} - $top_hits{$repeat_id}{$database}{L}{mismatches}) / 200;
-      # print $TAB "\t$final_score";
-    } elsif ( !($top_hits{$repeat_id}{$database}{L}{qcovhsp}) && ($top_hits{$repeat_id}{$database}{R}{qcovhsp}) ) {
+
+    } elsif ( !($top_hits{$repeat_id}{$database}{L}) && ($top_hits{$repeat_id}{$database}{R}) ) { ## or only R
       $final_score = ($top_hits{$repeat_id}{$database}{R}{qcovhsp} - $top_hits{$repeat_id}{$database}{R}{mismatches}) / 200;
-      # print $TAB "\t$final_score";
+
     } else { ## else print 0
       $final_score = 0;
-      # print $TAB "\t0";
+
     }
     print $TAB "\t$final_score";
   }
