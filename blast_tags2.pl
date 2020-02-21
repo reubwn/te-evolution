@@ -139,7 +139,7 @@ make_blastdbs( \@databases_makedb ); ## and then do it
 ## open BLAST results file
 my $blast_file = $OUT_prefix . "_blast.txt";
 open (my $BLAST, ">$blast_file") or die $!;
-print $BLAST join ("\t", "qacc","sacc","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qcovhsp","ltr_id","ltr_pos","db","cigar","boundary","descr","result","score") . "\n";
+print $BLAST join ("\t", "qacc","sacc","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qcovhsp","ltr_id","db","descr","result","score") . "\n";
 
 ## glob tag fasta files
 my @fasta_files = glob ("$IN_path/*fasta $IN_path/*fnaa $IN_path/*fa");
@@ -174,27 +174,27 @@ foreach my $fasta_file (@fasta_files) {
       if ( $qcovhsp == 100 ) { ## successful BLAST alignment across entire tag
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 1;
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$fasta_file,$databases_names{$database},"full","PASS",$score) . "\n";
+        print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},"full","PASS",$score) . "\n";
         next BLAST;
 
       } elsif ( $qcovhsp > 80 ) { ## successful match spanning at least 30 bp over TE/genome boundary
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0.8;
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$fasta_file,$databases_names{$database},"partial","PASS",$score) . "\n";
+        print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},"partial","PASS",$score) . "\n";
         next BLAST;
 
       } elsif ( $qcovhsp > 50 ) { ## marginal match spanning at least 1 bp over TE/genome boundary
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0.5;
         $score = 0 if ( $collapse_marginal_scores ); ## collapse marginal calls to score = 0
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$fasta_file,$databases_names{$database},"partial","MARGINAL",$score) . "\n";
+        print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},"partial","MARGINAL",$score) . "\n";
         next BLAST;
 
       } else { ## match that does not span TE/genome boundary by any overlap
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0;
         $score = 0 if ( $collapse_marginal_scores ); ## collapse marginal calls to score = 0
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$fasta_file,$databases_names{$database},"partial","FAIL",$score) . "\n";
+        print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},"partial","FAIL",$score) . "\n";
         next BLAST;
       }
     }
