@@ -25,9 +25,7 @@ OPTIONS [*] = required
   -d|--dbs   [STRING] : comma delim list of genomes to search (fasta) [*]
   -n|--names [STRING] : comma delim list of column names to print, instead of full db names [inherits from '--db'] ! must be same order as '--dbs'
   -o|--out   [STRING] : output prefix for outfiles ['results_blastTEags']
-  -g|--overhang [INT] : require at least this number of bases as genome tag [50]
-  -m|--match    [INT] : require at least this number of bases either side of TE boundary [50]
-  -e|--evalue   [STR] : BLASTn evalue [1e-20]
+  -e|--evalue   [STR] : BLASTn evalue [1e-5]
   -t|--threads  [INT] : number of threads for multicore operations [4]
   -q|--qcovhsp        : use blast qcovhsp value for scoring
   -c|--collapse       : collapse marginal scores to zero, rather than qcovhsp value (recommended if -q)
@@ -44,9 +42,7 @@ my (
   );
 ## defaults
 my $OUT_prefix = "results_blastTEags";
-my $overhang_threshold = 50;
-my $match_threshold = 50;
-my $evalue = "1e-20";
+my $evalue = "1e-5";
 my $threads = 4;
 
 GetOptions (
@@ -54,8 +50,6 @@ GetOptions (
   'd|db=s' => \$db_string,
   'n|names:s' => \$names_string,
   'o|out:s' => \$OUT_prefix,
-  'g|overhang:i' => \$overhang_threshold,
-  'm|match:i' => \$match_threshold,
   'e|evalue:s' => \$evalue,
   't|threads:i' => \$threads,
   'q|qcovhsp' => \$use_qcovhsp_as_score,
@@ -73,7 +67,7 @@ die $usage unless ( $IN_path && $db_string );
 print STDERR "[####] TE-EVOLUTION blast_tags.pl\n";
 print STDERR "[####] " . `date`;
 ##
-my ( %ltr_hash, %blast_hash, %lefties_hash, %righties_hash, %results );
+my ( %ltr_hash, %results );
 my ( $ambiguous ) = ( 0 );
 
 ## check system for required programs
@@ -154,46 +148,61 @@ print STDERR "[INFO] There are ".scalar(@fasta_files)." files in '$IN_path'\n";
 ## iterate across files and dbs; do BLAST
 foreach my $fasta_file (@fasta_files) {
 
+  ## load $ltr_hash
+  (my $repeat_id = $fasta_file) =~ s/\.[^.]+$//;
+  open (my $GREP, "grep '>' $fasta_file |") or die $!;
+  while (<$GREP>) {
+    chomp;
+    (my $ltr_id = $_) =~ s/\>//;
+    $ltr_hash{$repeat_id}{'leftie'} = $ltr_id if ($ltr_id =~ m/:L:/);
+    $ltr_hash{$repeat_id}{'rightie'} = $ltr_id if ($ltr_id =~ m/:R:/);
+  }
+
   ## BLAST vs each database in turn
   foreach my $database (@databases_blastdb) {
     print STDERR "[INFO] BLASTing query '$fasta_file' TE-tags versus database '$database'...\n";
 
     ## open blast filehandle
-    open (my $IN, "blastn -task megablast -num_threads $threads -evalue $evalue -query $query_file -db $database -outfmt '6 std qcovhsp' |") or die $!;
+    open (my $BLAST, "blastn -task blastn -num_threads $threads -evalue $evalue -query $fasta_file -db $database -outfmt '6 std qcovhsp' |") or die $!;
 
     ## iterate thru blast results
-    while (my $line = <$IN>) {
+    BLAST: while (my $line = <$BLAST>) {
       chomp $line;
       my ($qacc, $sacc, $pident, $length, $mismatch, $gapopen, $qstart, $qend, $sstart, $send, $evalue, $bitscore, $qcovhsp) = split( m/\s+/, $line );
 
       my $score;
-      if ( $qcovhsp == 100 ) { ## successful alignment across entire tag
+      if ( $qcovhsp == 100 ) { ## successful BLAST alignment across entire tag
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 1;
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$query,"L",$databases_names{$database},$cigars{$qacc},$boundaries{$qacc},"full","PASS",$score) . "\n";
+        print $BLAST join ("\t", $line,$fasta_file,$databases_names{$database},"full","PASS",$score) . "\n";
+        next BLAST;
 
-      } elsif ( ($qstart < ($boundaries{$qacc}-$match_threshold)) && ($qend > ($boundaries{$qacc}+$match_threshold)) ) { ## successful match spanning +/- $match_threshold over TE/genome boundary
+      } elsif ( $qcovhsp > 80 ) { ## successful match spanning at least 30 bp over TE/genome boundary
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0.8;
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$query,"L",$databases_names{$database},$cigars{$qacc},$boundaries{$qacc},"partial","PASS",$score) . "\n";
+        print $BLAST join ("\t", $line,$fasta_file,$databases_names{$database},"partial","PASS",$score) . "\n";
+        next BLAST;
 
-      } elsif ( ($qstart <= $boundaries{$qacc}) && ($qend => $boundaries{$qacc}) ) { ## successful match spanning TE/genome boundary by any margin
-        $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0.2;
+      } elsif ( $qcovhsp > 50 ) { ## marginal match spanning at least 1 bp over TE/genome boundary
+        $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0.5;
         $score = 0 if ( $collapse_marginal_scores ); ## collapse marginal calls to score = 0
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$query,"L",$databases_names{$database},$cigars{$qacc},$boundaries{$qacc},"partial","MARGINAL",$score) . "\n";
+        print $BLAST join ("\t", $line,$fasta_file,$databases_names{$database},"partial","MARGINAL",$score) . "\n";
+        next BLAST;
 
       } else { ## match that does not span TE/genome boundary by any overlap
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0;
         $score = 0 if ( $collapse_marginal_scores ); ## collapse marginal calls to score = 0
         ## annotate BLAST result
-        print $BLAST join ("\t", $line,$query,"L",$databases_names{$database},$cigars{$qacc},$boundaries{$qacc},"partial","FAIL",$score) . "\n";
+        print $BLAST join ("\t", $line,$fasta_file,$databases_names{$database},"partial","FAIL",$score) . "\n";
+        next BLAST;
       }
     }
-    close $IN;
+    close $BLAST;
   }
 }
 
+print Dumper(\%ltr_hash);
 # ## print lefties and righties to file for BLASTing; do BLAST
 # foreach my $query (nsort keys %ltr_hash) {
 #
@@ -314,11 +323,11 @@ open (my $ANNOT, $blast_file) or die $!;
 while (my $line = <$ANNOT>) {
   chomp $line;
   my @F = split ( m/\t/, $line );
-  if ( !($results{$F[0]}{$F[15]}) ) { ## first time
-    $results{$F[0]}{$F[15]} = $F[20]; ## key= TE-tag name; val= %{ key= database name; val= score }
+  if ( !($results{$F[0]}{$F[14]}) ) { ## first time
+    $results{$F[0]}{$F[14]} = $F[17]; ## key= TE-tag name; val= %{ key= database name; val= score }
   } else { ## subsequent
     ## keep highest score
-    $results{$F[0]}{$F[15]} = $F[20] if ($F[20] > $results{$F[0]}{$F[15]});
+    $results{$F[0]}{$F[14]} = $F[17] if ($F[17] > $results{$F[0]}{$F[14]});
   }
 }
 close $ANNOT;
@@ -341,39 +350,35 @@ if ( $mark ) {
   print $TAB join ( "\t", "ltr_id","position","qacc", nsort values %databases_names ) . "\n"; ## print header
 }
 
-foreach my $ltr ( nsort keys %ltr_hash ) {
+foreach my $ltr_id ( nsort keys %ltr_hash ) {
   ## iterate thru ALL ltrs, not just the ones with blast hits
-  ## ~~~~~~~~~~
-  ## do lefties
-  ## ~~~~~~~~~~
-  foreach my $name ( nsort @{ $ltr_hash{$ltr}{left_names} } ) {
-    print $TAB "$ltr\tL\t$name"; ## print ltr_id and position factors
-    foreach my $db ( nsort values %databases_names ) {
-      if ( $results{$name}{$db} ) { ## if exists, print score
-        print $TAB "\t$results{$name}{$db}";
-      } else { ## else print 0
-        print $TAB "\t0";
-      }
+  print $TAB "$ltr_id"; ## print ltr_id
+  foreach my $db ( nsort values %databases_names ) {
+    if ( $results{$ltr_id}{$db} ) { ## if exists, print score
+      print $TAB "\t$results{$ltr_id}{$db}";
+    } else { ## else print 0
+      print $TAB "\t0";
     }
-    print $TAB "\n";
   }
+  print $TAB "\n";
+
   print $TAB "###\n" if ( $eyeball );
 
-  ## ~~~~~~~~~~~~~
-  ## then righties
-  ## ~~~~~~~~~~~~~
-  foreach my $name ( nsort @{ $ltr_hash{$ltr}{right_names} } ) {
-    print $TAB "$ltr\tR\t$name"; ## print ltr_id and position factors
-    foreach my $db ( nsort values %databases_names ) {
-      if ( $results{$name}{$db} ) { ## if exists, print score
-        print $TAB "\t$results{$name}{$db}";
-      } else { ## else print 0
-        print $TAB "\t0";
-      }
-    }
-    print $TAB "\n";
-  }
-  print $TAB "###\n" if ( $eyeball );
+  # ## ~~~~~~~~~~~~~
+  # ## then righties
+  # ## ~~~~~~~~~~~~~
+  # foreach my $name ( nsort @{ $ltr_hash{$ltr}{right_names} } ) {
+  #   print $TAB "$ltr\tR\t$name"; ## print ltr_id and position factors
+  #   foreach my $db ( nsort values %databases_names ) {
+  #     if ( $results{$name}{$db} ) { ## if exists, print score
+  #       print $TAB "\t$results{$name}{$db}";
+  #     } else { ## else print 0
+  #       print $TAB "\t0";
+  #     }
+  #   }
+  #   print $TAB "\n";
+  # }
+  # print $TAB "###\n" if ( $eyeball );
 }
 close $TAB;
 
