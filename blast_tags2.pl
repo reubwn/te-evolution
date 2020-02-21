@@ -164,6 +164,7 @@ close $BLAST;
 
 ## process annotated blast results
 ## want to save the 'best' score per query-subject pair only
+print STDERR "[INFO] Parsing BLAST results file '$blast_file'...\n";
 open (my $ANNOT_BLAST, "sort -k14,14V -k15,15V -k16,16V -k19,19n $blast_file |") or die $!;
 while (my $line = <$ANNOT_BLAST >) {
   chomp $line;
