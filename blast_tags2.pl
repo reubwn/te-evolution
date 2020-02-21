@@ -170,6 +170,7 @@ while (my $line = <$ANNOT_BLAST >) {
   chomp $line;
   my @F = split ( m/\t/, $line );
   if ( scalar(@F) == 19 ) {
+    print STDERR "Here?\n";
     $top_hits{$F[13]}{$F[14]}{$F[15]}{qcovhsp} = $F[12];
     $top_hits{$F[13]}{$F[14]}{$F[15]}{mismatches} = $F[4];
   }
