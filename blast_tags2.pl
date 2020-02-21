@@ -168,9 +168,10 @@ open (my $ANNOT_BLAST, "sort -k14,14V -k15,15V -k16,16V -k19,19n $blast_file |")
 while (my $line = <$ANNOT_BLAST >) {
   chomp $line;
   my @F = split ( m/\t/, $line );
-  $top_hits{$F[13]}{$F[14]}{$F[15]}{qcovhsp} = $F[12];
-  $top_hits{$F[13]}{$F[14]}{$F[15]}{mismatches} = $F[4];
-  print STDERR $line unless ($F[13]);
+  if ( scalar(@F) == 19 ) {
+    $top_hits{$F[13]}{$F[14]}{$F[15]}{qcovhsp} = $F[12];
+    $top_hits{$F[13]}{$F[14]}{$F[15]}{mismatches} = $F[4];
+  }
 }
 close $ANNOT_BLAST;
 
