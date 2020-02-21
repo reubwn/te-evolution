@@ -41,14 +41,11 @@ die $usage unless ($in_gfffile && $in_fastafile);
 print STDERR "[####] TE-EVOLUTION create_tags.pl\n";
 print STDERR "[####] " . `date`;
 
-## check for samtools
-check_progs();
-
 ## make dir structure for sequences
 my $base_dir = $out_prefix . "_createTEags";
 system rm    => '-rf' => $base_dir if (-d $base_dir); ## delete it if exists, it's a brutal world
-system mkdir => '-p'  => "$base_dir/sequence/lefties";
-system mkdir => '-p'  => "$base_dir/sequence/righties";
+system mkdir => '-p'  => "$base_dir/sequence/";
+# system mkdir => '-p'  => "$base_dir/sequence/righties";
 
 ## parse fasta sequence file
 my %scaffolds_hash;
@@ -61,35 +58,49 @@ print STDERR "[INFO] Retrieved ".commify(scalar(keys %scaffolds_hash))." sequenc
 ## parse GFF3 file for LTR positions
 my $count = 1;
 my %seen_already;
+my ($repeat_id, $ltr_id);
 open (my $GFF, $in_gfffile) or die $!;
 while (<$GFF>) {
   chomp;
   next if (m/^\#/);
   my @F = split (/\s+/, $_);
+  ## get repeat ID
+  if ( $F[2] eq "repeat_region" ) {
+    if ($F[8] =~ m/ID=(\S+)/) {
+      $repeat_id = $1;
+    }
+  }
+  ## get TE tag sequences
   if ( $F[2] eq "long_terminal_repeat" ) { ## possible it might change in future versions
+  open (my $FA, ">>$base_dir/sequence/$repeat_id.fa");
+  ## get fasta header construct
+  if ($F[8] =~ m/Parent=(\S+)/) {
+    $ltr_id = $1;
+  }
     if ( $seen_already{$F[0]} ) {
       ## LTR is a rightie
-      my $filename = $F[0]."_R_".$seen_already{$F[0]}++.".fasta";
-      open (my $FA, ">$base_dir/sequence/righties/$filename");
-      print $FA ">$filename\n";
-      print $FA $scaffolds_hash{$F[0]} -> subseq(($F[4]-$overhang_threshold),($F[4]+$overhang_threshold)) . "\n";
-      close $FA;
+      my $left_coord = ($F[4]-$overhang_threshold+1) < 0 ? 0 : ($F[4]-$overhang_threshold+1); ## left coord cannot be < 0
+      my $right_coord = $scaffolds_hash{$F[0]}->length() < ($F[4]+$overhang_threshold) ? $scaffolds_hash{$F[0]}->length() : ($F[4]+$overhang_threshold); ## right coord cannot be > seq length
+      ## print TE tag
+      print $FA ">$ltr_id:R:$left_coord..$right_coord\n";
+      print $FA $scaffolds_hash{$F[0]} -> subseq( $left_coord,$right_coord ) . "\n";
       ## above should return this:
       ## -----[----LTR2----]---
       ##                 ===== tag2
     } else {
       ## LTR is a leftie
-      my $filename = $F[0]."_L_".$seen_already{$F[0]}++.".fasta";
-      open (my $FA, ">$base_dir/sequence/lefties/$filename");
-      print $FA ">$filename\n";
-      print $FA $scaffolds_hash{$F[0]} -> subseq(($F[3]-$overhang_threshold),($F[3]+$overhang_threshold)) . "\n";
-      close $FA;
+      my $left_coord = ($F[3]-$overhang_threshold) < 0 ? 0 : ($F[3]-$overhang_threshold); ## left coord cannot be < 0
+      my $right_coord = $scaffolds_hash{$F[0]}->length() < ($F[3]+$overhang_threshold-1) ? $scaffolds_hash{$F[0]}->length() : ($F[3]+$overhang_threshold-1); ## right coord cannot be > seq length
+      ## print TE tag
+      print $FA ">$ltr_id:L:$left_coord..$right_coord\n";
+      print $FA $scaffolds_hash{$F[0]} -> subseq( $left_coord,$right_coord ) . "\n";
       ## above should return this:
       ## -----[----LTR1----]---
       ##    ===== tag1
     }
     $seen_already{$F[0]}++;
-    $count++;
+    # print STDERR "$seen_already{$F[0]}\n";
+    close $FA if $seen_already{$F[0]} == 2;
   }
 }
 close $GFF;
