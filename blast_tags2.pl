@@ -166,19 +166,11 @@ close $BLAST;
 ## want to save the 'best' score per query-subject pair only
 open (my $ANNOT_BLAST, "sort -k14,14V -k15,15V -k16,16V -k19,19n $blast_file |") or die $!;
 while (my $line = <$ANNOT_BLAST >) {
+  next if $. == 1;
   chomp $line;
   my @F = split ( m/\t/, $line );
   $top_hits{$F[13]}{$F[14]}{$F[15]}{qcovhsp} = $F[12];
   $top_hits{$F[13]}{$F[14]}{$F[15]}{mismatches} = $F[4];
-  #
-  #
-  #
-  # if ( !($results{$F[0]}{$F[14]}) ) { ## first time
-  #   $results{$F[0]}{$F[14]} = $F[17]; ## key= TE-tag name; val= %{ key= database name; val= score }
-  # } else { ## subsequent
-  #   ## keep highest score
-  #   $results{$F[0]}{$F[14]} = $F[17] if ($F[17] > $results{$F[0]}{$F[14]});
-  # }
 }
 close $ANNOT_BLAST;
 
