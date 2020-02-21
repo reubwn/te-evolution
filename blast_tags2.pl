@@ -163,10 +163,10 @@ foreach my $fasta_file (@fasta_files) {
     print STDERR "[INFO] BLASTing query '$fasta_file' TE-tags versus database '$database'...\n";
 
     ## open blast filehandle
-    open (my $BLAST, "blastn -task blastn -num_threads $threads -evalue $evalue -query $fasta_file -db $database -outfmt '6 std qcovhsp' |") or die $!;
+    open (my $BLASTCMD, "blastn -task blastn -num_threads $threads -evalue $evalue -query $fasta_file -db $database -outfmt '6 std qcovhsp' |") or die $!;
 
     ## iterate thru blast results
-    LINE: while (my $line = <$BLAST>) {
+    LINE: while (my $line = <$BLASTCMD>) {
       chomp $line;
       my ($qacc, $sacc, $pident, $length, $mismatch, $gapopen, $qstart, $qend, $sstart, $send, $evalue, $bitscore, $qcovhsp) = split( m/\s+/, $line );
 
@@ -198,9 +198,10 @@ foreach my $fasta_file (@fasta_files) {
         next LINE;
       }
     }
-    close $BLAST;
+    close $BLASTCMD;
   }
 }
+close $BLAST;
 
 print Dumper(\%ltr_hash);
 # ## print lefties and righties to file for BLASTing; do BLAST
