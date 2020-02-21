@@ -176,6 +176,8 @@ while (my $line = <$ANNOT_BLAST >) {
 }
 close $ANNOT_BLAST;
 
+print STDERR Dumper(\%top_hits);
+
 ## print condensed results
 ## to show presence / absence of tags across all databases
 my $table_file = $OUT_prefix . "_table.txt";
@@ -191,7 +193,7 @@ if ( $mark ) {
   }
   print $TAB "\n";
 } else {
-  print $TAB join ( "\t", "repeat_id","position","qacc", nsort values %databases_names ) . "\n"; ## print header
+  print $TAB join ( "\t", "repeat_id", nsort values %databases_names ) . "\n"; ## print header
 }
 
 foreach my $repeat_id ( nsort keys %ltr_hash ) {
@@ -201,7 +203,7 @@ foreach my $repeat_id ( nsort keys %ltr_hash ) {
     my $final_score;
     if ( ($top_hits{$repeat_id}{$database}{L}{qcovhsp}) && ($top_hits{$repeat_id}{$database}{R}{qcovhsp}) ) { ## if hit exists for both L && R
       $final_score = (($top_hits{$repeat_id}{$database}{L}{qcovhsp} - $top_hits{$repeat_id}{$database}{L}{mismatches}) + ($top_hits{$repeat_id}{$database}{R}{qcovhsp} - $top_hits{$repeat_id}{$database}{R}{mismatches})) / 200;
-      # print $TAB "\t$final_score";
+      print STDERR "Ever get in here?\n";
     } elsif ( ($top_hits{$repeat_id}{$database}{L}{qcovhsp}) && !($top_hits{$repeat_id}{$database}{R}{qcovhsp}) ) {
       $final_score = ($top_hits{$repeat_id}{$database}{L}{qcovhsp} - $top_hits{$repeat_id}{$database}{L}{mismatches}) / 200;
       # print $TAB "\t$final_score";
