@@ -118,7 +118,7 @@ foreach my $fasta_file (nsort @fasta_files) {
 
   ## BLAST vs each database in turn
   foreach my $database (@databases_blastdb) {
-    print STDERR "[INFO] BLASTing query '$fasta_file' TE-tags versus database '$database'...\n";
+    print STDERR "[INFO] BLASTing query '$repeat_id' TE-tags versus database '$databases_names{$database}'...\n";
 
     ## open blast filehandle
     open (my $BLASTCMD, "blastn -task blastn -num_threads $threads -evalue $evalue -query $fasta_file -db $database -outfmt '6 std qcovhsp' |") or die $!;
@@ -129,7 +129,7 @@ foreach my $fasta_file (nsort @fasta_files) {
       my ($qacc, $sacc, $pident, $length, $mismatch, $gapopen, $qstart, $qend, $sstart, $send, $evalue, $bitscore, $qcovhsp) = split( m/\s+/, $line );
 
       my $score;
-      my $ltr_pos = $qacc =~ m/L/ ? "L" : "R";
+      my $ltr_pos = $qacc =~ m/:L:/ ? "L" : "R";
       if ( $qcovhsp == 100 ) { ## successful BLAST alignment across entire tag
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 1;
         ## annotate BLAST result
