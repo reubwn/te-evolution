@@ -184,12 +184,12 @@ close $ANNOT_BLAST;
 my $table_file = $OUT_prefix . "_table.txt";
 open (my $TAB, ">$table_file") or die $!;
 if ( $mark ) {
-  print $TAB "repeat_id\tposition\tqacc\t";
+  print $TAB "repeat_id";
   foreach ( nsort values %databases_names ) {
     if ( $_ eq $mark ) { ## convoluted way of printing a couple of asterisks, but heyho
-      print $TAB "**$_\t";
+      print $TAB "\t**$_";
     } else {
-      print $TAB "$_\t";
+      print $TAB "\t$_";
     }
   }
   print $TAB "\n";
