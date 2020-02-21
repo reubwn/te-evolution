@@ -105,8 +105,8 @@ while (<$GFF>) {
   }
 }
 close $GFF;
-print STDERR "[INFO] Found ".commify(scalar(keys %repeat_regions))." LTR regions\n";
-print STDERR "[INFO] Finished! ".`date`;
+print STDERR "[INFO] Found ".commify(scalar(keys %repeat_regions))." LTR regions in $in_gfffile\n";
+print STDERR "[INFO] Finished\n";
 
 # my $usage = "
 # SYNOPSIS
