@@ -70,7 +70,7 @@ while (<$GFF>) {
     if ( $seen_already{$F[0]} ) {
       ## LTR is a rightie
       my $filename = $F[0]."_R_".$seen_already{$F[0]}++.".fasta";
-      open (my $FA, ">$base_dir/sequence/righties/$filename")
+      open (my $FA, ">$base_dir/sequence/righties/$filename");
       print $FA ">$filename\n";
       print $FA $scaffolds_hash{$F[0]} -> subseq(($F[4]-$overhang_threshold),($F[4]+$overhang_threshold)) . "\n";
       close $FA;
@@ -80,7 +80,7 @@ while (<$GFF>) {
     } else {
       ## LTR is a leftie
       my $filename = $F[0]."_L_".$seen_already{$F[0]}++.".fasta";
-      open (my $FA, ">$base_dir/sequence/lefties/$filename")
+      open (my $FA, ">$base_dir/sequence/lefties/$filename");
       print $FA ">$filename\n";
       print $FA $scaffolds_hash{$F[0]} -> subseq(($F[3]-$overhang_threshold),($F[3]+$overhang_threshold)) . "\n";
       close $FA;
