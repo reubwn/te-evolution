@@ -281,7 +281,8 @@ sub check_blastdbs {
   my @out;
   my $full_path;
   for my $i ( 0 .. $#in ) {
-    $full_path = glob("$in[$i]"); ## to interpret home '~' correctly
+    ($full_path = $in[$i]) =~ s/^~(\w*)/ ( getpwnam( $1 || $ENV{USER} ))[7] /e;
+    # glob("$in[$i]"); ## to interpret home '~' correctly
     print STDERR "File: $in[$i]\n";
     print STDERR "Full path: $full_path\n";
     ## file not exist
