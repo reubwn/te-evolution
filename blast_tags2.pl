@@ -208,14 +208,19 @@ my $table_file = $OUT_prefix . "_table.txt";
 open (my $TAB, ">$table_file") or die $!;
 if ( $mark ) {
   print $TAB "repeat_id";
+  my $success = 0;
   foreach ( nsort values %databases_names ) {
     if ( $_ eq $mark ) { ## convoluted way of printing a couple of asterisks, but heyho
       print $TAB "\t**$_";
+      $success = 1;
     } else {
       print $TAB "\t$_";
     }
   }
   print $TAB "\n";
+  if ($success == 0) {
+    die "[ERROR] Mark specified for taxon '$mark', but '$mark' does not exist!\n";
+  }
 } else {
   print $TAB join ( "\t", "repeat_id", nsort values %databases_names ) . "\n"; ## print header
 }
@@ -248,9 +253,8 @@ close $TAB;
 print STDERR "[####] Done!\n";
 print STDERR "[####] " . `date`;
 
-####################
+
 #################### SUBS
-####################
 
 sub check_progs {
   chomp( my $makeblastdb_path = `which makeblastdb` );
@@ -281,10 +285,9 @@ sub check_blastdbs {
   my @out;
   my $full_path;
   for my $i ( 0 .. $#in ) {
-    ($full_path = $in[$i]) =~ s/^~(\w*)/ ( getpwnam( $1 || $ENV{USER} ))[7] /e;
-    # glob("$in[$i]"); ## to interpret home '~' correctly
-    print STDERR "File: $in[$i]\n";
-    print STDERR "Full path: $full_path\n";
+    ($full_path = $in[$i]) =~ s/^~(\w*)/ ( getpwnam( $1 || $ENV{USER} ))[7] /e; ## to interpret home '~' correctly
+    # print STDERR "File: $in[$i]\n";
+    # print STDERR "Full path: $full_path\n";
     ## file not exist
     if (! -f "$full_path") {
       die "[ERROR] File '$full_path' does not exist! $!\n\n";
