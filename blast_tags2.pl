@@ -281,7 +281,8 @@ sub check_blastdbs {
   my @out;
   for my $i ( 0 .. $#in ) {
     my $full_path = glob("$in[$i]"); ## to interpret home '~' correctly
-    print STDERR "$full_path\n";
+    print STDERR "File: $in[$i]\n";
+    print STDERR "Full path: $full_path\n";
     ## file not exist
     if (! -f "$full_path") {
       die "[ERROR] File '$full_path' does not exist! $!\n\n";
