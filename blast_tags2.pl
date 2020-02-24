@@ -80,6 +80,7 @@ check_progs();
 ## get dbs to blast against
 my (@databases_makedb, @databases_blastdb, %databases_names);
 if ($IN_file) {
+  print STDERR "[INFO] Using genomes found in '$IN_file' as input\n";
   open (my $DB, $IN_file) or die $!;
   while (<$DB>) {
     chomp;
@@ -241,22 +242,6 @@ foreach my $repeat_id ( nsort keys %ltr_hash ) {
   }
   print $TAB "\n";
   print $TAB "###\n" if ( $eyeball );
-
-  # ## ~~~~~~~~~~~~~
-  # ## then righties
-  # ## ~~~~~~~~~~~~~
-  # foreach my $name ( nsort @{ $ltr_hash{$ltr}{right_names} } ) {
-  #   print $TAB "$ltr\tR\t$name"; ## print ltr_id and position factors
-  #   foreach my $db ( nsort values %databases_names ) {
-  #     if ( $results{$name}{$db} ) { ## if exists, print score
-  #       print $TAB "\t$results{$name}{$db}";
-  #     } else { ## else print 0
-  #       print $TAB "\t0";
-  #     }
-  #   }
-  #   print $TAB "\n";
-  # }
-  # print $TAB "###\n" if ( $eyeball );
 }
 close $TAB;
 
@@ -270,7 +255,6 @@ print STDERR "[####] " . `date`;
 sub check_progs {
   chomp( my $makeblastdb_path = `which makeblastdb` );
   chomp( my $blastn_path = `which blastn` );
-  chomp( my $samtools_path = `which samtools` );
   if (!( $makeblastdb_path )) {
     die "[ERROR] Cannot find makeblastdb in \$PATH\n";
   } else {
@@ -280,11 +264,6 @@ sub check_progs {
     die "[ERROR] Cannot find blastn in \$PATH\n";
   } else {
     print STDERR "[INFO] Found blastn at $blastn_path\n";
-  }
-  if (!( $samtools_path )) {
-    die "[ERROR] Cannot find samtools in \$PATH\n";
-  } else {
-    print STDERR "[INFO] Found samtools at $samtools_path\n"; ##
   }
 }
 
@@ -301,20 +280,21 @@ sub check_blastdbs {
   my @in = @{ $_[0] };
   my @out;
   for my $i ( 0 .. $#in ) {
+    my $full_path = glob($in[$i]); ## to interpret home '~' correctly
     ## file not exist
-    if (! -f $in[$i]) {
-      die "[ERROR] File $in[$i] does not exist! $!\n\n";
+    if (! -f $full_path) {
+      die "[ERROR] File '$full_path' does not exist! $!\n\n";
     }
     ## file is gzipped
-    if ($in[$i] =~ m/gz$/) {
+    if ($full_path =~ m/gz$/) {
       die "[ERROR] Please gunzip your fasta file: $in[$i]\n\n";
     }
     ## blastdb already made, remove from @out
-    if ( (-f "$in[$i].nhr") && (-f "$in[$i].nin") && (-f "$in[$i].nsq") ) {
-      print STDERR "[INFO] BlastDB already exists for $in[$i]\n";
+    if ( (-f "$full_path.nhr") && (-f "$full_path.nin") && (-f "$full_path.nsq") ) {
+      print STDERR "[INFO] BlastDB already exists for $full_path\n";
       # splice( @out, $i, 1 );
     } else {
-      push ( @out, $in[$i] );
+      push ( @out, $full_path );
     }
   }
   return \@out;
