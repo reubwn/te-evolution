@@ -20,11 +20,14 @@ use Getopt::Long qw(:config no_ignore_case);
 
 my $usage = "
 SYNOPSIS
+  --in is a simple list of paths to fasta files, with DB ID as second column
+  eg. '~/path/to/genome_foo.fasta  foo'
 
 OPTIONS [*] = required
-  -i|--in      [PATH] : path to 'sequence/' dir output from 'create_tags.pl' [*]
-  -d|--dbs   [STRING] : comma delim list of genomes to search (fasta) [*]
-  -n|--names [STRING] : comma delim list of column names to print, instead of full db names [inherits from '--db'] ! must be same order as '--dbs'
+  -i|--in      [FILE] : list of genomes to search [*]
+  -f|--fasta   [PATH] : path to 'sequence/' dir output from 'create_tags.pl' [*]
+  -d|--dbs   [STRING] : comma delim list of genomes to search (fasta) [alternative to -i]
+  -n|--names [STRING] : comma delim list of column names to print, instead of full db names [alternative to -i] ! must be same order as '--dbs'
   -o|--out   [STRING] : output prefix for outfiles ['results_blastTEags']
   -e|--evalue   [STR] : BLASTn evalue [1e-5]
   -t|--threads  [INT] : number of threads for multicore operations [4]
@@ -38,7 +41,7 @@ OPTIONS [*] = required
 
 ## input
 my (
-  $IN_path, $db_string, $names_string, $use_qcovhsp_as_score, $collapse_marginal_scores, $mark, $eyeball,
+  $IN_file, $fasta_path, $db_string, $names_string, $use_qcovhsp_as_score, $collapse_marginal_scores, $mark, $eyeball,
   $help, $verbose, $debug
   );
 ## defaults
@@ -47,8 +50,9 @@ my $evalue = "1e-5";
 my $threads = 4;
 
 GetOptions (
-  'i|in=s' => \$IN_path,
-  'd|db=s' => \$db_string,
+  'i|in:s' => \$IN_file,
+  'f|fasta=s' => \$fasta_path,
+  'd|db:s' => \$db_string,
   'n|names:s' => \$names_string,
   'o|out:s' => \$OUT_prefix,
   'e|evalue:s' => \$evalue,
@@ -63,8 +67,8 @@ GetOptions (
   );
 ## help and usage
 die $usage if $help;
-die $usage unless ( $IN_path && $db_string );
-$IN_path =~ s/\/$//;
+die $usage unless ( ($IN_file || $db_string) && $fasta_path );
+$fasta_path =~ s/\/$//;
 
 print STDERR "[####] TE-EVOLUTION blast_tags.pl\n";
 print STDERR "[####] " . `date`;
@@ -74,13 +78,31 @@ my ( %ltr_hash, %top_hits, %final_results );
 ## check system for required programs
 check_progs();
 ## get dbs to blast against
-my @databases_makedb = split( m/\,/, $db_string );
-my @databases_blastdb = split( m/\,/, $db_string );
-my %databases_names;
-if ( $names_string ) { ## get names subs if exists, otherwise just use input db names (makes for nicer table)
-  @databases_names{@databases_blastdb} = split( m/\,/, $names_string ); ##key= full db name; val= sub name
-} else {
-  @databases_names{@databases_blastdb} = split( m/\,/, $db_string ); ##key= full db name; val= full db name
+my (@databases_makedb, @databases_blastdb, %databases_names);
+if ($IN_file) {
+  open (my $DB, $IN_file) or die $!;
+  while (<$DB>) {
+    chomp;
+    my @F = split (m/\s+/);
+    if (scalar(@F)==2) {
+      push @databases_makedb, $F[0];
+      push @databases_blastdb, $F[0];
+      $databases_names{$F[0]} = $F[1];
+    } else {
+      push @databases_makedb, $F[0];
+      push @databases_blastdb, $F[0];
+      $databases_names{$F[0]} = $F[0];
+    }
+  }
+  close $DB;
+} elsif ( $db_string ) {
+  @databases_makedb = split( m/\,/, $db_string );
+  @databases_blastdb = split( m/\,/, $db_string );
+  if ( $names_string ) { ## get names subs if exists, otherwise just use input db names (makes for nicer table)
+    @databases_names{@databases_blastdb} = split( m/\,/, $names_string ); ##key= full db name; val= sub name
+  } else {
+    @databases_names{@databases_blastdb} = split( m/\,/, $db_string ); ##key= full db name; val= full db name
+  }
 }
 
 ## shout about scoring system
@@ -100,8 +122,8 @@ open (my $BLAST, ">$blast_file") or die $!;
 print $BLAST join ("\t", "qacc","sacc","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qcovhsp","repeat_id","ltr_pos","db","descr","result","score") . "\n";
 
 ## glob tag fasta files
-my @fasta_files = glob ("$IN_path/*fasta $IN_path/*fnaa $IN_path/*fa");
-print STDERR "[INFO] There are ".scalar(@fasta_files)." files in '$IN_path'\n";
+my @fasta_files = glob ("$fasta_path/*fasta $fasta_path/*fnaa $fasta_path/*fa");
+print STDERR "[INFO] There are ".scalar(@fasta_files)." files in '$fasta_path'\n";
 
 ## iterate across files and dbs; do BLAST
 foreach my $fasta_file (nsort @fasta_files) {
