@@ -45,7 +45,7 @@ my (
   $help, $verbose, $debug
   );
 ## defaults
-my $OUT_prefix = "results_blastTEags";
+my $OUT_prefix = "results";
 my $evalue = "1e-5";
 my $threads = 4;
 
@@ -118,7 +118,7 @@ print STDERR "[INFO] Check/make blastdb's for: \n\t" . join("\n\t", @databases_m
 make_blastdbs( \@databases_makedb ); ## and then do it
 
 ## open BLAST results file
-my $blast_file = $OUT_prefix . "_blast.txt";
+my $blast_file = $OUT_prefix . "_blastTEags_blast.txt";
 open (my $BLAST, ">$blast_file") or die $!;
 print $BLAST join ("\t", "qacc","sacc","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qcovhsp","repeat_id","ltr_pos","db","descr","result","score") . "\n";
 
@@ -161,21 +161,18 @@ foreach my $fasta_file (nsort @fasta_files) {
 
       } elsif ( $qcovhsp > 80 ) { ## successful match spanning at least 30 bp over TE/genome boundary
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0.8;
-        ## annotate BLAST result
         print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},$ltr_pos,"partial","PASS",$score) . "\n";
         next LINE;
 
       } elsif ( $qcovhsp > 50 ) { ## marginal match spanning at least 1 bp over TE/genome boundary
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0.5;
         $score = 0 if ( $collapse_marginal_scores ); ## collapse marginal calls to score = 0
-        ## annotate BLAST result
         print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},$ltr_pos,"partial","MARGINAL",$score) . "\n";
         next LINE;
 
       } else { ## match that does not span TE/genome boundary by any overlap
         $score = ( $use_qcovhsp_as_score ) ? $qcovhsp : 0;
         $score = 0 if ( $collapse_marginal_scores ); ## collapse marginal calls to score = 0
-        ## annotate BLAST result
         print $BLAST join ("\t", $line,$repeat_id,$databases_names{$database},$ltr_pos,"partial","FAIL",$score) . "\n";
         next LINE;
       }
@@ -188,15 +185,13 @@ close $BLAST;
 ## process annotated blast results
 ## want to save the 'best' score per query-subject pair only
 print STDERR "[INFO] Parsing BLAST results file '$blast_file'...\n";
+## sorting like this ensures the best BLAST hit is last; easier to extract with code below
 open (my $ANNOT_BLAST, "sort -k14,14V -k15,15V -k16,16V -k19,19n $blast_file |") or die $!;
 while (my $line = <$ANNOT_BLAST>) {
   chomp $line;
   my @F = split ( m/\t/, $line );
-  # if ( scalar(@F) == 19 ) {
-
-    $top_hits{$F[13]}{$F[14]}{$F[15]}{qcovhsp} = $F[12];
-    $top_hits{$F[13]}{$F[14]}{$F[15]}{mismatches} = $F[4];
-  # }
+  $top_hits{$F[13]}{$F[14]}{$F[15]}{qcovhsp} = $F[12];
+  $top_hits{$F[13]}{$F[14]}{$F[15]}{mismatches} = $F[4];
 }
 close $ANNOT_BLAST;
 
@@ -204,7 +199,7 @@ close $ANNOT_BLAST;
 
 ## print condensed results
 ## to show presence / absence of tags across all databases
-my $table_file = $OUT_prefix . "_table.txt";
+my $table_file = $OUT_prefix . "_blastTEags_table.txt";
 open (my $TAB, ">$table_file") or die $!;
 if ( $mark ) {
   print $TAB "repeat_id";
