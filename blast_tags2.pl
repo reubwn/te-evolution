@@ -113,7 +113,7 @@ if ( $use_qcovhsp_as_score ) {
   print STDERR "[INFO] Scoring system set to '1, 0.8, 0.2, 0'\n";
 }
 
-print STDERR "[INFO] Check/make blastdb's for: \n" . join("\n\t", @databases_makedb) . "\n";
+print STDERR "[INFO] Check/make blastdb's for: \n\t" . join("\n\t", @databases_makedb) . "\n";
 @databases_makedb = @{ check_blastdbs(\@databases_makedb) }; ## check which database files need makeblastdb run on them
 make_blastdbs( \@databases_makedb ); ## and then do it
 
@@ -279,8 +279,9 @@ sub parallel {
 sub check_blastdbs {
   my @in = @{ $_[0] };
   my @out;
+  my $full_path;
   for my $i ( 0 .. $#in ) {
-    my $full_path = glob("$in[$i]"); ## to interpret home '~' correctly
+    $full_path = glob("$in[$i]"); ## to interpret home '~' correctly
     print STDERR "File: $in[$i]\n";
     print STDERR "Full path: $full_path\n";
     ## file not exist
