@@ -219,7 +219,7 @@ if ( $mark ) {
   }
   print $TAB "\n";
   if ($success == 0) {
-    die "[ERROR] Mark specified for taxon '$mark', but '$mark' does not exist!\n";
+    print STDERR "[WARN] Mark specified for taxon '$mark', but '$mark' does not exist!\n";
   }
 } else {
   print $TAB join ( "\t", "repeat_id", nsort values %databases_names ) . "\n"; ## print header
