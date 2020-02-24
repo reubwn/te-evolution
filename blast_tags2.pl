@@ -280,18 +280,18 @@ sub check_blastdbs {
   my @in = @{ $_[0] };
   my @out;
   for my $i ( 0 .. $#in ) {
-    my $full_path = glob($in[$i]); ## to interpret home '~' correctly
+    my $full_path = glob("$in[$i]"); ## to interpret home '~' correctly
     ## file not exist
-    if (! -f $full_path) {
+    if (! -f "$full_path") {
       die "[ERROR] File '$full_path' does not exist! $!\n\n";
     }
     ## file is gzipped
     if ($full_path =~ m/gz$/) {
-      die "[ERROR] Please gunzip your fasta file: $in[$i]\n\n";
+      die "[ERROR] Please gunzip your fasta file: $full_path\n\n";
     }
     ## blastdb already made, remove from @out
     if ( (-f "$full_path.nhr") && (-f "$full_path.nin") && (-f "$full_path.nsq") ) {
-      print STDERR "[INFO] BlastDB already exists for $full_path\n";
+      print STDERR "[INFO] BlastDB already exists for '$full_path'\n";
       # splice( @out, $i, 1 );
     } else {
       push ( @out, $full_path );
