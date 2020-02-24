@@ -73,12 +73,12 @@ while (<$GFF>) {
   }
   ## get TE tag sequences
   if ( $F[2] eq "long_terminal_repeat" ) { ## possible it might change in future versions
-  open (my $FA, ">>$base_dir/sequence/$repeat_id.fa");
-  ## get fasta header construct
-  if ($F[8] =~ m/Parent=(\S+)/) {
-    $ltr_id = $1;
-  }
-    if ( $seen_already{$F[0]} ) {
+    open (my $FA, ">>$base_dir/sequence/$repeat_id.fa");
+    ## get fasta header construct
+    if ($F[8] =~ m/Parent=(\S+)/) {
+      $ltr_id = $1;
+    }
+    if ( $seen_already{$repeat_id} ) {
       ## LTR is a rightie
       my $left_coord = ($F[4]-$overhang_threshold+1) < 0 ? 0 : ($F[4]-$overhang_threshold+1); ## left coord cannot be < 0
       my $right_coord = $scaffolds_hash{$F[0]}->length() < ($F[4]+$overhang_threshold) ? $scaffolds_hash{$F[0]}->length() : ($F[4]+$overhang_threshold); ## right coord cannot be > seq length
@@ -99,198 +99,17 @@ while (<$GFF>) {
       ## -----[----LTR1----]---
       ##    ===== tag1
     }
-    $seen_already{$F[0]}++;
+    $seen_already{$repeat_id}++;
     # print STDERR "$seen_already{$F[0]}\n";
-    close $FA if $seen_already{$F[0]} == 2;
+    close $FA if $seen_already{$repeat_id} == 2;
   }
 }
 close $GFF;
 print STDERR "[INFO] Found ".commify(scalar(keys %repeat_regions))." LTR regions in $in_gfffile\n";
 print STDERR "[INFO] Finished\n";
 
-# my $usage = "
-# SYNOPSIS
-#   Creates TE-tags from SAM/BAM input.
-#
-# OPTIONS [*] = required
-#   -i|--in      [FILE] : Reads mapped to LTRs (BAM/SAM) [*]
-#   -o|--out   [STRING] : output prefix for outfiles ['results_createTEags']
-#   -g|--overhang [INT] : require at least this number of bases as genome tag [50]
-#   -h|--help           : this message
-# \n";
-#
-# ## input
-# my ( $in_samfile, $help, $debug );
-# ## defaults
-# my $out_prefix = "results";
-# my $overhang_threshold = 50;
-#
-#
-# GetOptions (
-#   'i|in=s' => \$in_samfile,
-#   'o|out:s' => \$out_prefix,
-#   'h|help' => \$help,
-#   'd|debug' => \$debug
-# );
-# ## help and usage
-# die $usage if $help;
-# die $usage unless ($in_samfile);
-#
-# print STDERR "[####] TE-EVOLUTION create_tags.pl\n";
-# print STDERR "[####] " . `date`;
-#
-# ## check for samtools
-# check_progs();
-#
-# ## make dir structure for sequences
-# my $base_dir = $out_prefix . "_createTEags";
-# system rm    => '-rf' => $base_dir if (-d $base_dir); ## delete it if exists, it's a brutal world
-# system mkdir => '-p'  => "$base_dir/sequence/lefties";
-# system mkdir => '-p'  => "$base_dir/sequence/righties";
-#
-# my ( %ltr_coords, %ltr_hash, %results );
-# my ( $lefties, $righties, $ambiguous, $l_i, $r_i ) = (0,0,0,0,0);
-#
-# ## parse SAM input file -H
-# ## to get ref lengths
-# open (my $INSAM1, "samtools view -H $in_samfile |") or die $!;
-# while (my $line = <$INSAM1>) {
-#   chomp $line;
-#   if ( $line =~ m/^\@SQ/ ) { ## probably unneccesary
-#     if ( $line =~ m/SN:(\w+)\tLN:(\d+)/ ) {
-#       $ltr_coords{$1} = $2; ## key= LTR name; val= LTR length
-#     }
-#   }
-# }
-# close $INSAM1;
-#
-# ## open BED file of overhangs
-# open (my $BED, ">$base_dir/overhangs.bed") or die $!;
-# foreach (nsort keys %ltr_coords) {
-#   ## bedtools - select ONLY reads that overhang into TE-part by 50 bases or more
-#   print $BED "$_\t0\t$overhang_threshold\tleft_overhang\n$_\t" . ($ltr_coords{$_} - $overhang_threshold) . "\t$ltr_coords{$_}\tright_overhang\n";
-# }
-# close $BED;
-#
-# ## open BAM file for output
-# open (my $OUTSAM, ">$base_dir/accepted_reads.sam") or die $!;
-# open (my $OUTFASTA, ">$base_dir/accepted_reads.fasta") or die $!;
-# open (my $OUTMAP, ">$base_dir/names_map.txt") or die $!;
-#
-# ## parse SAM input file
-# ## to generate te-tags with metadata - select ONLY reads that overhang into genome-part by 50 bases or more
-# open (my $INSAM2, "bedtools intersect -a $in_samfile -b $base_dir/overhangs.bed | samtools view -h |") or die $!;
-# while (my $line = <$INSAM2>) {
-#   ## pipe header lines straight to outbam
-#   if ( $line =~ m/^\@/ ) {
-#     print $OUTSAM $line;
-#     next;
-#   }
-#
-#   my @F = split ("\t", $line);
-#   ## parse reads and build hash
-#   if ( $F[5] =~ m/^(\d+)S/ ) {
-#     ## read overhangs left-side of LTR element
-#     if ( $1 >= $overhang_threshold ) {
-#       ## read has te-tag >= $overhang_threshold
-#       $F[0] =~ s/\s.+// if ($F[0] =~ m/\s+/); ## remove trailing text with whitespaces, common in fastq headers
-#       push @{ $ltr_hash{$F[2]}{left_names} }, $F[0];
-#       push @{ $ltr_hash{$F[2]}{left_simplified} }, "left_$l_i"; ## simplified name, make things easier
-#       push @{ $ltr_hash{$F[2]}{left_cigars} }, $F[5];
-#       push @{ $ltr_hash{$F[2]}{left_seqs} }, $F[9];
-#       print $OUTSAM $line; ## read is accepted
-#       print $OUTFASTA ">$F[0]\n$F[9]\n";
-#       print $OUTMAP "left_$l_i\t$F[0]\n";
-#       $lefties++;
-#       $l_i++;
-#
-#     }
-#   } elsif ( $F[5] =~ m/(\d+)S$/ ) {
-#     ## read overhangs right-side of LTR element
-#     if ( $1 >= $overhang_threshold ) {
-#       ## read has te-tag >= $overhang_threshold
-#       $F[0] =~ s/\s.+// if ($F[0] =~ m/\s+/);
-#       push @{ $ltr_hash{$F[2]}{right_names} }, $F[0];
-#       push @{ $ltr_hash{$F[2]}{right_simplified} }, "right_$r_i";
-#       push @{ $ltr_hash{$F[2]}{right_cigars} }, $F[5];
-#       push @{ $ltr_hash{$F[2]}{right_seqs} }, $F[9];
-#       print $OUTSAM $line; ## read is accepted
-#       print $OUTFASTA ">$F[0]\n$F[9]\n";
-#       print $OUTMAP "right_$r_i\t$F[0]\n";
-#       $righties++;
-#       $r_i++;
-#
-#     }
-#
-#   } else {
-#     $ambiguous++;
-#   }
-# }
-# close $INSAM2;
-# close $OUTSAM;
-# close $OUTFASTA;
-# print Dumper \%ltr_hash if ($debug);
-#
-# print STDERR "[INFO] Number of LTR sequences: " . scalar(keys %ltr_hash) . "\n";
-# print STDERR "[INFO] Total number of left-overhanging reads: $lefties\n";
-# print STDERR "[INFO] Total number of right-overhanging reads: $righties\n";
-# print STDERR "[INFO] Total number of reads skipped due to ambiguous CIGAR: $ambiguous\n" if ( $ambiguous > 0 );
-#
-# open (my $OUTTAB, ">$base_dir/te_tags.txt") or die $!;
-#
-# ## process LTR reads
-# foreach my $query (nsort keys %ltr_hash) {
-#
-#   ## ~~~~~~~~~~~~~~~
-#   ## process lefties
-#   ## ~~~~~~~~~~~~~~~
-#   if ( ($ltr_hash{$query}{left_names}) && ($ltr_hash{$query}{left_seqs}) ) {
-#     my @names_arr = @{$ltr_hash{$query}{left_names}};
-#     my @simplified_arr = @{$ltr_hash{$query}{left_simplified}};
-#     my @seqs_arr = @{$ltr_hash{$query}{left_seqs}};
-#     my @cigars_arr = @{$ltr_hash{$query}{left_cigars}};
-#     my @overhangs_arr = map { m/^(\d+)S/; $1 } @cigars_arr;
-#     my %cigars; @cigars{@names_arr} = @cigars_arr; ##key= seqid; val= cigar
-#     my %boundaries; @boundaries{@names_arr} = @overhangs_arr; ##key= seqid; val=overhang value from cigar
-#     print Dumper \%boundaries if ( $debug );
-#
-#
-# }
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-# #####
-# foreach (nsort keys %ltr_hash) {
-#   if ( $ltr_hash{$_}{left_names} ) {
-#     my @left_names = @{ $ltr_hash{$_}{left_names} };
-#     my @left_names = @{ $ltr_hash{$_}{left_names} };
-#     open (my $L, ">$base_dir/sequence/lefties/$_.fasta") or die $!;
-#     for my $i ( 0 .. $#left_names ) {
-#       print $L ">$left_names[$i]\n${$ltr_hash{$_}{left_seqs}}[$i]\n"; ## !
-#     }
-#     close $L;
-#   }
-#
-#   if ( $ltr_hash{$_}{right_names} ) {
-#     my @right_names = @{ $ltr_hash{$_}{right_names} };
-#     open (my $R, ">$base_dir/sequence/righties/$_.fasta") or die $!;
-#     for my $i ( 0 .. $#right_names ) {
-#       print $R ">$right_names[$i]\n${$ltr_hash{$_}{right_seqs}}[$i]\n"; ## !
-#     }
-#     close $R;
-#   }
-# }
 
-####################
 #################### SUBS
-####################
 
 sub commify {
     my $text = reverse $_[0];
@@ -323,63 +142,4 @@ sub check_progs {
   }
 }
 
-
-#
-# my %seq_hash;
-#
-# my $seqio = Bio::SeqIO->new( -file => $fasta_infile, -format => "fasta" );
-# while ( my $seq_obj = $seqio->next_seq() ) {
-#   $seq_hash{$seq_obj->display_id()} = $seq_obj->seq();
-# }
-# print "[INFO] Number of raw sequences: ".scalar(keys %seq_hash)."\n";
-# print "[INFO] Identity threshold set to: $identity_threshold\%\n";
-# print "[INFO] Running clustalo with $threads CPUs... ";
-#
-# my %filtered = %{ clustalo_pairwise( \%seq_hash ) };
-#
-# print "done\n";
-# print "[INFO] Number of filtered sequences: ".scalar(keys %filtered)."\n";
-#
-# foreach (sort {length($filtered{$b})<=>length($filtered{$a})} keys %filtered) {
-#   print ">$_\n$filtered{$_}\n";
-# }
-#
-# ############## SUBS
-#
-# sub clustalo_pairwise {
-#   if ( system( "clustalo --help &>/dev/null" ) != 0 ) {
-#     die "[ERROR] Couldn't find clustalo in \$PATH!\n\n";
-#   }
-#
-#   my %contigs = %{ $_[0] };
-#   my %contigs_new = %{ $_[0] };
-#   foreach my $seq1 (keys %contigs) {
-#     foreach my $seq2 (keys %contigs) {
-#       next if $seq1 eq $seq2;
-#       open (my $TMP, ">tmp.fa") or die $!;
-#       print $TMP ">$seq1\n$contigs{$seq1}\n>$seq2\n$contigs{$seq2}\n";
-#       close $TMP;
-#       if ( system ("clustalo -i tmp.fa -t DNA -o tmp.aln --force --threads=$threads") !=0 ) {
-#         die "[ERROR] Clustalo didn't work, is it operational and in \$PATH?\n";
-#       }
-#       my $in = Bio::AlignIO->new( -file => "tmp.aln", -format => "fasta" );
-#       my $aln_obj = $in->next_aln();
-#       if ( $aln_obj->percentage_identity() > $identity_threshold ) {
-#         my $delete = length( $contigs{$seq1} ) < length( $contigs{$seq2} ) ? $seq1 : $seq2;
-#         delete $contigs_new{$delete};
-#         if ($verbose) {
-#           if ($delete eq $seq1) { ## *** denotes sequence that is retained
-#             print STDERR join ("\t", $seq1, "$seq2***", $aln_obj->percentage_identity()) . "\n";
-#           } else {
-#             print STDERR join ("\t", "$seq1***", $seq2, $aln_obj->percentage_identity()) . "\n";
-#           }
-#         }
-#       }
-#     }
-#   }
-#   return \%contigs_new;
-# }
-#
-# if ( system("rm tmp.fa tmp.aln") !=0 ) {
-#   die "[WARN] Could do clean up\n";
-# }
+__END__
