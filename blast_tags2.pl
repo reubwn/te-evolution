@@ -113,7 +113,7 @@ if ( $use_qcovhsp_as_score ) {
   print STDERR "[INFO] Scoring system set to '1, 0.8, 0.2, 0'\n";
 }
 
-print STDERR "[INFO] Check/make blastdb's for: @databases_makedb\n";
+print STDERR "[INFO] Check/make blastdb's for: \n" . join("\t", @databases_makedb,"\n");
 @databases_makedb = @{ check_blastdbs(\@databases_makedb) }; ## check which database files need makeblastdb run on them
 make_blastdbs( \@databases_makedb ); ## and then do it
 
