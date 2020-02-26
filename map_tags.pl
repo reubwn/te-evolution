@@ -116,7 +116,7 @@ foreach my $fasta_file (nsort @fasta_files) {
   close $FA;
 }
 
-print Dumper(\%ltr_hash);
+# print Dumper(\%ltr_hash);
 
 ## iterate across SAM files
 foreach my $database ( @databases_sams ) {
