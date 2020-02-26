@@ -135,7 +135,7 @@ foreach my $database ( @databases_sams ) {
   close $SAM;
 }
 
-print Dumper(\%sam_hash);
+print Dumper(\%sam_hash) if $debug;
 
 ## open MAP scores and counts results file
 my $scores_file = $outprefix . "_mapTEags_scores.txt";
