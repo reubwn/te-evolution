@@ -130,7 +130,7 @@ foreach my $database ( @databases_sams ) {
       my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
       my @m = ($F[5] =~ m/(\d+)=/g); ## pull out the number of matches '='
       my @x = ($F[5] =~ m/(\d+)X/g); ## pull out the number of mismatches 'X'
-      $sam_hash{$database}{$ltr_hash{$F[2]}}{$ltr_id}{((sum(@m)+sum(@x))-sum(@x))}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
+      $sam_hash{$database}{$ltr_hash{$F[2]}}{$F[2]}{((sum(@m)+sum(@x))-sum(@x))}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
     } else {
       next;
     }
@@ -174,8 +174,8 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
   print $SCORES $repeat_id; ## print ltr_id
   print $COUNTS $repeat_id; ## print ltr_id
   foreach my $database ( nsort keys %sam_hash ) {
+    my (@scores, @counts);
     foreach my $repeat_id ( nsort keys %{$sam_hash{$database}} ) {
-      my (@scores, @counts);
       foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
         foreach my $score ( (sort {$b<=>$a} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
           # print STDOUT join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$score,$sam_hash{$database}{$repeat_id}{$ltr_id}{$score}) . "\n";
