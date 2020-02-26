@@ -176,21 +176,18 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
   print $SCORES $repeat_id; ## print ltr_id
   print $COUNTS $repeat_id; ## print ltr_id
   foreach my $database ( nsort keys %sam_hash ) {
-    # foreach my $repeat_id ( nsort keys %{$sam_hash{$database}} ) {
-      my (@scores, @counts);
-      foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
-        foreach my $score ( (sort {$b<=>$a} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
-          print STDOUT join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$score,$sam_hash{$database}{$repeat_id}{$ltr_id}{$score}) . "\n";
-          push (@scores, $score);
-          push (@counts, $sam_hash{$database}{$repeat_id}{$ltr_id}{$score});
-        }
+    my (@scores, @counts);
+    foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
+      foreach my $score ( (sort {$b<=>$a} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
+        print STDOUT join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$score,$sam_hash{$database}{$repeat_id}{$ltr_id}{$score}) . "\n";
+        push (@scores, $score);
+        push (@counts, $sam_hash{$database}{$repeat_id}{$ltr_id}{$score});
       }
-
-      # my $final_score = sum(@scores)/200;
-      # my $final_count = sum(@counts);
-      print $SCORES "\t" . (sum(@scores)/200);
-      print $COUNTS "\t" . sum(@counts);
-    # }
+    }
+    my $final_score = sum(@scores)/200;
+    print $SCORES "\t$final_score";
+    my $final_count = ( sum(@counts) ) ? sum(@counts) : 0;
+    print $COUNTS "\t$final_count";
   }
   print $SCORES "\n";
   print $COUNTS "\n";
