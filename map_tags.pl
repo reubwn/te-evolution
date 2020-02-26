@@ -126,8 +126,8 @@ foreach my $database ( @databases_sams ) {
   # my $subject = `basename $full_path`; ## get the
   open (my $SAM, "samtools view $full_path |") or die $!;
   while (my $line = <$SAM>) {
-    if ($line =~ m/\=/) {
-      my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
+    my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
+    if ($F[5] =~ m/\=/) {
       my @m = ($F[5] =~ m/(\d+)=/g); ## pull out the number of matches '='
       my @x = ($F[5] =~ m/(\d+)X/g); ## pull out the number of mismatches 'X'
       my $mismatches = ( sum(@x) ) ? sum(@x) : 0;
