@@ -20,41 +20,42 @@ use Getopt::Long qw(:config no_ignore_case);
 
 my $usage = "
 SYNOPSIS
-  --in is a simple list of paths to fasta files, with DB ID as second column
-  eg. '~/path/to/genome_foo.fasta  foo'
 
 OPTIONS [*] = required
-  -i|--in      [FILE] : list of genomes to search [*]
+  -i|--in      [FILE] : list of genomes to search (txt) [*]
   -f|--fasta   [PATH] : path to 'sequence/' dir output from 'create_tags.pl' [*]
   -d|--dbs   [STRING] : comma delim list of genomes to search (fasta) [alternative to -i]
-  -n|--names [STRING] : comma delim list of column names to print, instead of full db names [alternative to -i] ! must be same order as '--dbs'
+  -n|--names [STRING] : comma delim list of column names to print, instead of full db names; must be same order as '--dbs'
   -o|--out   [STRING] : output prefix for outfiles ['results_blastTEags']
   -e|--evalue   [STR] : BLASTn evalue [1e-5]
   -t|--threads  [INT] : number of threads for multicore operations [4]
   -q|--qcovhsp        : use blast qcovhsp value for scoring
-  -c|--collapse       : collapse marginal scores to zero, rather than qcovhsp value (recommended if -q)
+  -c|--collapse       : collapse marginal scores to zero, rather than qcovhsp value
   -a|--mark     [STR] : mark focal individual with special symbol in output [asterisks '**']
   -y|--eyeball        : print delimiter between LTR id's for easier reading
   -h|--help           : this message
-  -d|--debug          : debug mode
+
+DETAILS
+  --in is a simple list of paths to fasta files, with sample ID as second column
+  eg. '~/path/to/genome_foo.fasta foo'
 \n";
 
 ## input
 my (
-  $IN_file, $fasta_path, $db_string, $names_string, $use_qcovhsp_as_score, $collapse_marginal_scores, $mark, $eyeball,
+  $infile, $fasta_path, $db_string, $names_string, $use_qcovhsp_as_score, $collapse_marginal_scores, $mark, $eyeball,
   $help, $verbose, $debug
   );
 ## defaults
-my $OUT_prefix = "results";
+my $outprefix = "results";
 my $evalue = "1e-5";
 my $threads = 4;
 
 GetOptions (
-  'i|in:s' => \$IN_file,
+  'i|in:s' => \$infile,
   'f|fasta=s' => \$fasta_path,
   'd|db:s' => \$db_string,
   'n|names:s' => \$names_string,
-  'o|out:s' => \$OUT_prefix,
+  'o|out:s' => \$outprefix,
   'e|evalue:s' => \$evalue,
   't|threads:i' => \$threads,
   'q|qcovhsp' => \$use_qcovhsp_as_score,
@@ -62,26 +63,28 @@ GetOptions (
   'a|mark:s' => \$mark,
   'y|eyeball' => \$eyeball,
   'h|help' => \$help,
-  'v|verbose' => \$verbose,
+  'verbose' => \$verbose,
   'debug' => \$debug
   );
 ## help and usage
 die $usage if $help;
-die $usage unless ( ($IN_file || $db_string) && $fasta_path );
+die $usage unless ( ($infile || $db_string) && $fasta_path );
 $fasta_path =~ s/\/$//;
 
 print STDERR "[####] TE-EVOLUTION blast_tags.pl\n";
 print STDERR "[####] " . `date`;
-##
+
+## stuff
 my ( %ltr_hash, %top_hits, %final_results );
 
 ## check system for required programs
 check_progs();
+
 ## get dbs to blast against
 my (@databases_makedb, @databases_blastdb, %databases_names);
-if ($IN_file) {
-  print STDERR "[INFO] Using genomes found in '$IN_file' as input\n";
-  open (my $DB, $IN_file) or die $!;
+if ($infile) {
+  print STDERR "[INFO] Using genomes found in '$infile' as input\n";
+  open (my $DB, $infile) or die $!;
   while (<$DB>) {
     chomp;
     my @F = split (m/\s+/);
@@ -118,12 +121,12 @@ print STDERR "[INFO] Check/make blastdb's for: \n\t" . join("\n\t", @databases_m
 make_blastdbs( \@databases_makedb ); ## and then do it
 
 ## open BLAST results file
-my $blast_file = $OUT_prefix . "_blastTEags_blast.txt";
+my $blast_file = $outprefix . "_blastTEags_out.txt";
 open (my $BLAST, ">$blast_file") or die $!;
 print $BLAST join ("\t", "qacc","sacc","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qcovhsp","repeat_id","ltr_pos","db","descr","result","score") . "\n";
 
 ## glob tag fasta files
-my @fasta_files = glob ("$fasta_path/*fasta $fasta_path/*fnaa $fasta_path/*fa");
+my @fasta_files = glob ("$fasta_path/*fasta $fasta_path/*fna $fasta_path/*fa");
 print STDERR "[INFO] There are ".scalar(@fasta_files)." files in '$fasta_path'\n";
 
 ## iterate across files and dbs; do BLAST
@@ -199,7 +202,7 @@ close $ANNOT_BLAST;
 
 ## print condensed results
 ## to show presence / absence of tags across all databases
-my $table_file = $OUT_prefix . "_blastTEags_table.txt";
+my $table_file = $outprefix . "_blastTEags_table.txt";
 open (my $TAB, ">$table_file") or die $!;
 if ( $mark ) {
   print $TAB "repeat_id";
