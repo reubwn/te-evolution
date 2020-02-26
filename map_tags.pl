@@ -124,7 +124,7 @@ foreach my $fasta_file (nsort @fasta_files) {
 foreach my $database ( @databases_sams ) {
   (my $full_path = $database) =~ s/^~(\w*)/ ( getpwnam( $1 || $ENV{USER} ))[7] /e; ## to interpret home '~' correctly
   ## check for any reads mapped
-  if (`wc -l < $full_path` > 0) {
+  if (`samtools view $full_path | wc -l` > 0) {
     open (my $SAM, "samtools view $full_path |") or die $!;
     while (my $line = <$SAM>) {
       my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
