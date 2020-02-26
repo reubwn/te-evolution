@@ -175,7 +175,7 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
       my $final_score;
       foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
         foreach my $mismatch ( (sort {$b<=>$b} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
-          print STDERR join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$mismatch) . "\n";
+          print STDOUT join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$mismatch) . "\n";
         }
       }
     }
