@@ -131,7 +131,7 @@ foreach my $database ( @databases_sams ) {
       my @m = ($F[5] =~ m/(\d+)=/g); ## pull out the number of matches '='
       my @x = ($F[5] =~ m/(\d+)X/g); ## pull out the number of mismatches 'X'
       my $mismatches = ( sum(@x) ) ? sum(@x) : 0;
-      print STDERR join("\t", sum(@m), sum(@x)) . "\n";
+      print STDERR join("\t", sum(@m), $mismatches . "\n";
       $sam_hash{$database}{$ltr_hash{$F[2]}}{$F[2]}{((sum(@m)+$mismatches)-$mismatches)}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
     } else {
       next;
