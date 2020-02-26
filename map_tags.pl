@@ -105,7 +105,7 @@ if ($infile) {
 my @fasta_files = glob ("$fasta_path/*fasta $fasta_path/*fna $fasta_path/*fa");
 print STDERR "[INFO] There are ".scalar(@fasta_files)." files in '$fasta_path'\n";
 foreach my $fasta_file (nsort @fasta_files) {
-  my $repeat_id = `basename -s .fa $fasta_file`;
+  my $repeat_id = chomp(`basename -s .fa $fasta_file`);
   open (my $FA, "grep '>' $fasta_file |") or die $!;
   while (<$FA>) {
     chomp;
@@ -175,7 +175,7 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
       my $final_score;
       foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
         foreach my $mismatch ( (sort {$b<=>$a} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
-          print STDOUT join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$mismatch) . "\n";
+          print STDOUT join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$mismatch,$sam_hash{$database}{$repeat_id}{$ltr_id}{$mismatch}) . "\n";
         }
       }
     }
