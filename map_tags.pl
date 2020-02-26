@@ -131,7 +131,7 @@ foreach my $database ( @databases_sams ) {
       my @m = ($F[5] =~ m/(\d+)=/g); ## pull out the number of matches '='
       my @x = ($F[5] =~ m/(\d+)X/g); ## pull out the number of mismatches 'X'
       my $mismatches = ( sum(@x) ) ? sum(@x) : 0;
-      print STDERR join("\t", sum(@m), $mismatches) . "\n";
+      # print STDERR join("\t", sum(@m), $mismatches) . "\n";
       $sam_hash{$database}{$ltr_hash{$F[2]}}{$F[2]}{((sum(@m)+$mismatches)-$mismatches)}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
     } else {
       next;
@@ -176,8 +176,8 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
   print $SCORES $repeat_id; ## print ltr_id
   print $COUNTS $repeat_id; ## print ltr_id
   foreach my $database ( nsort keys %sam_hash ) {
-    my (@scores, @counts);
     foreach my $repeat_id ( nsort keys %{$sam_hash{$database}} ) {
+      my (@scores, @counts);
       foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
         foreach my $score ( (sort {$b<=>$a} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
           # print STDOUT join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$score,$sam_hash{$database}{$repeat_id}{$ltr_id}{$score}) . "\n";
@@ -185,11 +185,12 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
           push (@counts, $sam_hash{$database}{$repeat_id}{$ltr_id}{$score});
         }
       }
+
+      # my $final_score = sum(@scores)/200;
+      # my $final_count = sum(@counts);
+      print $SCORES "\t" . (sum(@scores)/200);
+      print $COUNTS "\t" . sum(@counts);
     }
-    # my $final_score = sum(@scores)/200;
-    # my $final_count = sum(@counts);
-    print $SCORES "\t" . (sum(@scores)/200);
-    print $COUNTS "\t" . sum(@counts);
   }
   print $SCORES "\n";
   print $COUNTS "\n";
