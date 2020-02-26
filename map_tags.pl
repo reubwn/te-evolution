@@ -123,25 +123,31 @@ foreach my $fasta_file (nsort @fasta_files) {
 ## iterate across SAM files
 foreach my $database ( @databases_sams ) {
   (my $full_path = $database) =~ s/^~(\w*)/ ( getpwnam( $1 || $ENV{USER} ))[7] /e; ## to interpret home '~' correctly
-  # my $subject = `basename $full_path`; ## get the
-  open (my $SAM, "samtools view $full_path |") or die $!;
-  while (my $line = <$SAM>) {
-    my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
-    if (scalar(@F) >= 11) { ## SAM spec at least 11 columns
-      ## parse CIGAR strings of mapped reads to comupte score
-      my @m = ($F[5] =~ m/(\d+)=/g); ## pull out the number of matches '='
-      my @x = ($F[5] =~ m/(\d+)X/g); ## pull out the number of mismatches 'X'
-      my $matches = ( sum(@m) ) ? sum(@m) : 0;
-      my $mismatches = ( sum(@x) ) ? sum(@x) : 0;
-      # print STDERR join("\t", sum(@m), $mismatches) . "\n";
-      $sam_hash{$database}{$ltr_hash{$F[2]}}{$F[2]}{(($matches+$mismatches)-$mismatches)}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
-    } else {
-      ## no reads have mapped
-      $sam_hash{$database} = ();
-      print STDERR "NO READS IN $database\n";
+  ## check for any reads mapped
+  if (`wc -l < $full_path` > 0) {
+    open (my $SAM, "samtools view $full_path |") or die $!;
+    while (my $line = <$SAM>) {
+      my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
+      # if (scalar(@F) >= 11) { ## SAM spec at least 11 columns
+        ## parse CIGAR strings of mapped reads to comupte score
+        my @m = ($F[5] =~ m/(\d+)=/g); ## pull out the number of matches '='
+        my @x = ($F[5] =~ m/(\d+)X/g); ## pull out the number of mismatches 'X'
+        my $matches = ( sum(@m) ) ? sum(@m) : 0;
+        my $mismatches = ( sum(@x) ) ? sum(@x) : 0;
+        # print STDERR join("\t", sum(@m), $mismatches) . "\n";
+        $sam_hash{$database}{$ltr_hash{$F[2]}}{$F[2]}{(($matches+$mismatches)-$mismatches)}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
+      # } else {
+      #   ## no reads have mapped
+      #   $sam_hash{$database} = ();
+      #   print STDERR "NO READS IN $database\n";
+      # }
     }
+    close $SAM;
+  } else {
+    ## no reads have mapped
+    $sam_hash{$database} = ();
+    print STDERR "NO READS IN $database\n";
   }
-  close $SAM;
 }
 
 print Dumper(\%sam_hash) if $debug;
