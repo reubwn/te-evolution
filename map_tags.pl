@@ -5,6 +5,7 @@ use warnings;
 
 use Data::Dumper;
 use Sort::Naturally;
+use List::Util qw/sum/;
 use Getopt::Long qw(:config no_ignore_case);
 
 ## TODO
@@ -125,11 +126,13 @@ foreach my $database ( @databases_sams ) {
   # my $subject = `basename $full_path`; ## get the
   open (my $SAM, "samtools view $full_path |") or die $!;
   while (my $line = <$SAM>) {
-    chomp $line;
-    my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
-    my $ltr_id = $F[2];
-    if ($F[5] =~ m/(\d+)\=/) { ## pull out the number of matches '='
-      $sam_hash{$database}{$ltr_hash{$ltr_id}}{$ltr_id}{$1}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
+    if ($line =~ m/\=/) {
+      my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
+      my @m = ($F[5] =~ m/(\d+)=/g); ## pull out the number of matches '='
+      my @x = ($F[5] =~ m/(\d+)X/g); ## pull out the number of mismatches 'X'
+      $sam_hash{$database}{$ltr_hash{$F[2]}}{$ltr_id}{((sum(@m)+sum(@x))-sum(@x))}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
+    } else {
+      next;
     }
   }
   close $SAM;
@@ -172,14 +175,22 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
   print $COUNTS $repeat_id; ## print ltr_id
   foreach my $database ( nsort keys %sam_hash ) {
     foreach my $repeat_id ( nsort keys %{$sam_hash{$database}} ) {
-      my $final_score;
+      my (@scores, @counts);
       foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
-        foreach my $mismatch ( (sort {$b<=>$a} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
-          print STDOUT join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$mismatch,$sam_hash{$database}{$repeat_id}{$ltr_id}{$mismatch}) . "\n";
+        foreach my $score ( (sort {$b<=>$a} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
+          # print STDOUT join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$score,$sam_hash{$database}{$repeat_id}{$ltr_id}{$score}) . "\n";
+          push (@scores, $score);
+          push (@counts, $sam_hash{$database}{$repeat_id}{$ltr_id}{$score});
         }
       }
     }
+    # my $final_score = sum(@scores)/200;
+    # my $final_count = sum(@counts);
+    print $SCORES "\t" . (sum(@scores)/200);
+    print $COUNTS "\t" . sum(@counts);
   }
+  print $SCORES "\n";
+  print $COUNTS "\n";
 }
 
 #################### SUBS
