@@ -110,7 +110,8 @@ foreach my $fasta_file (nsort @fasta_files) {
   while (<$FA>) {
     chomp;
     (my $ltr_id = $_) =~ s/\>//;
-    $ltr_hash{$repeat_id} = $ltr_id; ## initialise the hash
+    $ltr_hash{$repeat_id}{left} = $ltr_id if ($ltr_id =~ /:L:/);
+    $ltr_hash{$repeat_id}{right} = $ltr_id if ($ltr_id =~ /:R:/);
   }
   close $FA;
 }
