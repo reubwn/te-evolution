@@ -193,6 +193,9 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
   print $COUNTS "\n";
 }
 
+print STDERR "[####] Done!\n";
+print STDERR "[####] " . `date`;
+
 #################### SUBS
 
 sub check_progs {
