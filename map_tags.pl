@@ -127,7 +127,7 @@ foreach my $database ( @databases_sams ) {
   open (my $SAM, "samtools view $full_path |") or die $!;
   while (my $line = <$SAM>) {
     my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
-    if (@F > 0) {
+    if (scalar(@F) >= 11) { ## SAM spec at least 11 columns
       ## parse CIGAR strings of mapped reads to comupte score
       my @m = ($F[5] =~ m/(\d+)=/g); ## pull out the number of matches '='
       my @x = ($F[5] =~ m/(\d+)X/g); ## pull out the number of mismatches 'X'
