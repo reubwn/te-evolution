@@ -138,6 +138,7 @@ foreach my $database ( @databases_sams ) {
     } else {
       ## no reads have mapped
       $sam_hash{$database} = ();
+      print STDERR "NO READS IN $database\n";
     }
   }
   close $SAM;
