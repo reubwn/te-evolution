@@ -184,7 +184,7 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
         push (@counts, $sam_hash{$database}{$repeat_id}{$ltr_id}{$score});
       }
     }
-    my $final_score = sum(@scores)/200;
+    my $final_score = ( sum(@scores) ) ? sum(@scores)/200 : 0;
     print $SCORES "\t$final_score";
     my $final_count = ( sum(@counts) ) ? sum(@counts) : 0;
     print $COUNTS "\t$final_count";
