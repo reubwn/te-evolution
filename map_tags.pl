@@ -105,7 +105,7 @@ if ($infile) {
 my @fasta_files = glob ("$fasta_path/*fasta $fasta_path/*fna $fasta_path/*fa");
 print STDERR "[INFO] There are ".scalar(@fasta_files)." files in '$fasta_path'\n";
 foreach my $fasta_file (nsort @fasta_files) {
-  my $repeat_id = chomp(`basename -s .fa $fasta_file`);
+  my $repeat_id = `basename -s .fa $fasta_file`; chomp $repeat_id;
   open (my $FA, "grep '>' $fasta_file |") or die $!;
   while (<$FA>) {
     chomp;
