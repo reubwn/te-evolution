@@ -70,7 +70,7 @@ print STDERR "[####] TE-EVOLUTION map_tags.pl\n";
 print STDERR "[####] " . `date`;
 
 ## stuff
-my ( %ltr_hash, %sam_hash );
+my ( %repeat_hash, %ltr_hash, %sam_hash );
 
 ## check system for required programs
 check_progs();
@@ -110,8 +110,9 @@ foreach my $fasta_file (nsort @fasta_files) {
   while (<$FA>) {
     chomp;
     (my $ltr_id = $_) =~ s/\>//;
-    $ltr_hash{$repeat_id}{left} = $ltr_id if ($ltr_id =~ /:L:/);
-    $ltr_hash{$repeat_id}{right} = $ltr_id if ($ltr_id =~ /:R:/);
+    $repeat_hash{$repeat_id}{left} = $ltr_id if ($ltr_id =~ /:L:/);
+    $repeat_hash{$repeat_id}{right} = $ltr_id if ($ltr_id =~ /:R:/);
+    $ltr_hash{$ltr_id} = $repeat_id;
   }
   close $FA;
 }
@@ -126,8 +127,9 @@ foreach my $database ( @databases_sams ) {
   while (my $line = <$SAM>) {
     chomp $line;
     my @F = split (m/\t/, $line); ## split on tab not whitespace as some readnames have whitespace
+    my $ltr_id = $F[2];
     if ($F[5] =~ m/(\d+)\=/) { ## pull out the number of matches '='
-      $sam_hash{$database}{$F[2]}{$1}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
+      $sam_hash{$database}{$ltr_hash{$ltr_id}}{$ltr_id}{$1}++; ## key= name of samfile; val= %{key= TEag; val=%{key= matches; val= count}}
     }
   }
   close $SAM;
@@ -165,7 +167,7 @@ if ( $mark ) {
 }
 
 ## sort and print results
-foreach my $repeat_id ( nsort keys %ltr_hash ) {
+foreach my $repeat_id ( nsort keys %repeat_hash ) {
   print $SCORES $repeat_id; ## print ltr_id
   print $COUNTS $repeat_id; ## print ltr_id
   foreach my $database ( nsort values %databases_names ) {
