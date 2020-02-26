@@ -170,10 +170,15 @@ if ( $mark ) {
 foreach my $repeat_id ( nsort keys %repeat_hash ) {
   print $SCORES $repeat_id; ## print ltr_id
   print $COUNTS $repeat_id; ## print ltr_id
-  foreach my $database ( nsort values %databases_names ) {
-    my $final_score;
-
-    # print $SCORES
+  foreach my $database ( nsort keys %sam_hash ) {
+    foreach my $repeat_id ( nsort keys %{$sam_hash{$database}} ) {
+      my $final_score;
+      foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
+        foreach my $mismatch ( (sort {$b<=>$b} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
+          print STDERR join ("\t", $databases_names{$database},$repeat_id,$ltr_id,$mismatch) . "\n";
+        }
+      }
+    }
   }
 }
 
