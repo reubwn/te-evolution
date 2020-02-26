@@ -183,7 +183,7 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
     my @counts = qw/0/;
     foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
       foreach my $score ( (sort {$b<=>$a} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
-        print STDERR join ("\t", "TOPHIT:",$databases_names{$database},$repeat_id,$ltr_id,$score,$sam_hash{$database}{$repeat_id}{$ltr_id}{$score}) . "\n" if ($debug);
+        print STDOUT join ("\t", "TOPHIT:",$databases_names{$database},$repeat_id,$ltr_id,$score,$sam_hash{$database}{$repeat_id}{$ltr_id}{$score}) . "\n" if ($debug);
         push (@scores, $score);
         push (@counts, $sam_hash{$database}{$repeat_id}{$ltr_id}{$score});
       }
