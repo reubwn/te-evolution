@@ -80,8 +80,8 @@ while (<$GFF>) {
     }
     if ( $seen_already{$repeat_id} ) {
       ## LTR is a rightie
-      my $left_coord = ($F[4]-$overhang_threshold+1) < 0 ? 0 : ($F[4]-$overhang_threshold+1); ## left coord cannot be < 0
-      my $right_coord = $scaffolds_hash{$F[0]}->length() < ($F[4]+$overhang_threshold) ? $scaffolds_hash{$F[0]}->length() : ($F[4]+$overhang_threshold); ## right coord cannot be > seq length
+      my $left_coord = ($F[4]-$overhang_threshold+1) <= 0 ? 0 : ($F[4]-$overhang_threshold+1); ## left coord cannot be < 0 [this shouldn't happen for a rightie as it is inside the LTR]
+      my $right_coord = ($F[4]+$overhang_threshold) >= $scaffolds_hash{$F[0]}->length() ? $scaffolds_hash{$F[0]}->length() : ($F[4]+$overhang_threshold); ## right coord cannot be > seq length
       ## print TE tag
       print $FA ">$ltr_id:R:$left_coord..$right_coord\n";
       print $FA $scaffolds_hash{$F[0]} -> subseq( $left_coord,$right_coord ) . "\n";
@@ -90,8 +90,8 @@ while (<$GFF>) {
       ##                 ===== tag2
     } else {
       ## LTR is a leftie
-      my $left_coord = ($F[3]-$overhang_threshold) < 0 ? 0 : ($F[3]-$overhang_threshold); ## left coord cannot be < 0
-      my $right_coord = $scaffolds_hash{$F[0]}->length() < ($F[3]+$overhang_threshold-1) ? $scaffolds_hash{$F[0]}->length() : ($F[3]+$overhang_threshold-1); ## right coord cannot be > seq length
+      my $left_coord = ($F[3]-$overhang_threshold) <= 0 ? 0 : ($F[3]-$overhang_threshold); ## left coord cannot be < 0
+      my $right_coord = ($F[3]+$overhang_threshold-1) >= $scaffolds_hash{$F[0]}->length() ? $scaffolds_hash{$F[0]}->length() : ($F[3]+$overhang_threshold-1); ## right coord cannot be > seq length [this shouldn't happen for a leftie as it is inside the LTR]
       ## print TE tag
       print $FA ">$ltr_id:L:$left_coord..$right_coord\n";
       print $FA $scaffolds_hash{$F[0]} -> subseq( $left_coord,$right_coord ) . "\n";
@@ -100,11 +100,12 @@ while (<$GFF>) {
       ##    ===== tag1
     }
     $seen_already{$repeat_id}++;
-    # print STDERR "$seen_already{$F[0]}\n";
     close $FA if $seen_already{$repeat_id} == 2;
   }
 }
 close $GFF;
+`cat $base_dir/sequence/*fa > $base_dir/$base_dir.fa`; ## cat into single library
+
 print STDERR "[INFO] Found ".commify(scalar(keys %repeat_regions))." LTR regions in $in_gfffile\n";
 print STDERR "[INFO] Finished\n";
 

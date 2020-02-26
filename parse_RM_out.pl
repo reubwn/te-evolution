@@ -111,9 +111,9 @@ foreach my $file (@files) {
 
     print STDERR "[INFO] Genome length: $genome_length bp\n";
     $genome_lengths_hash{$file} = $genome_length;
-} else {
-  print STDERR "($genome_lengths_hash{$file} bp)\n";
-}
+  } else {
+    print STDERR "($genome_lengths_hash{$file} bp)\n";
+  }
 
   open (my $IN, $file) or die $!;
   while (<$IN>) {

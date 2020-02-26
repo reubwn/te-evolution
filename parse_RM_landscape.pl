@@ -16,9 +16,10 @@ my $usage = "
 SYNOPSIS
 
 OPTIONS [*] = required
-  -i|--infile     [FILE]   : RepeatMasker landscape file (HTML) [*]
-  -o|--out        [STRING] : Prefix for outfiles [landscape]
-  -n|--nocondense          : Print full results [no]
+  -i|--infile     [FILE]   : landscape file (HTML) [*]
+  -o|--out        [STRING] : prefix for outfiles [landscape]
+  -c|--condense            : condense results to class level
+  -p|--ple                 : do NOT modify 'LINE/Penelope' to 'Penelope'
   -h|--help                : this message
 
 OUTPUTS
@@ -27,7 +28,8 @@ OUTPUTS
 ## input
 my (
   $html_infile,
-  $no_condense,
+  $condense,
+  $ple,
   $help, $debug
 );
 ## defaults
@@ -35,8 +37,9 @@ my $outprefix = "landscape";
 
 GetOptions (
   'i|infile=s' => \$html_infile,
-  'n|nocondense' => \$no_condense,
   'o|outprefix:s' => \$outprefix,
+  'c|condense' => \$condense,
+  'p|ple' => \$ple,
   'h|help' => \$help,
   'debug' => \$debug
 );
@@ -58,10 +61,10 @@ while (<$HTML>) {
   if ($_ =~ m/data.addColumn\('number',\s'(\w+\/*.*)'\);/) { ## get TEs present
     # print "$1\n";
     $te_full_hash{$i} = $1;
-    if ($no_condense) {
-      $repeat = $1; ## keep full class/family name
-    } else {
+    if ($condense) {
       ($repeat = $1) =~ s/\/.*//; ## trim to class
+    } else {
+      $repeat = $1; ## keep full class/family name
     }
     $te_hash{$i} = $repeat; ## key=index order; val= repeat name
     $i++;
@@ -76,25 +79,31 @@ while (<$HTML>) {
 close $HTML;
 print STDERR "[####] Number of TE families: ".scalar(keys %te_full_hash)."\n";
 
+## modify LINE/Penelope to Penelope post hoc
+unless ( $ple ) {
+  foreach (keys %te_hash) {
+    if ($te_hash{$_} eq 'LINE/Penelope') {
+      $te_hash{$_} = 'Penelope';
+    }
+  }
+  foreach (keys %te_full_hash) {
+    if ($te_full_hash{$_} eq 'LINE/Penelope') {
+      $te_full_hash{$_} = 'Penelope';
+    }
+  }
+  foreach (keys %html_hash) {
+    $html_hash{$_}{'Penelope'} = delete ( $html_hash{$_}{'LINE/Penelope'} );
+  }
+}
+
 ## Dumper
-print Dumper(\%html_hash) if $debug;
+print Dumper(\%te_hash) if $debug;
 
 ## open outfile
 open (my $OUT, ">$html_infile.landscape.txt") or die $!;
 
-## print full table
-if ($no_condense) {
-  my %nr = map {$_ => 1} values %te_hash;
-  print $OUT join ("\t", "\"Divergence\"", (map { qq/"$_"/ } nsort keys %nr) ) . "\n";
-  foreach my $col (sort {$a<=>$b} keys %html_hash) {
-    print $OUT "$col\t";
-    foreach (nsort keys %{$html_hash{$col}}) {
-      print $OUT "$html_hash{$col}{$_}\t";
-    }
-    print $OUT "\n";
-  }
-
-} else { ## condensed to Class
+## condensed to Class
+if ( $condense ) {
   print $OUT join ("\t", "Divergence", "Unknown", "Other", "DNA", "RC", "LTR", "LINE", "SINE" ) . "\n";
   foreach my $col (sort {$a<=>$b} keys %html_hash) {
     print $OUT "$col\t";
@@ -107,7 +116,18 @@ if ($no_condense) {
                             ($html_hash{$col}{SINE} ? $html_hash{$col}{SINE} : 0)
                     ) . "\n";
   }
-  close $OUT;
+
+} else { ## print full table
+  my %nr = map {$_ => 1} values %te_hash;
+  print $OUT join ("\t", "\"Divergence\"", (map { qq/"$_"/ } nsort keys %nr) ) . "\n";
+  foreach my $col (sort {$a<=>$b} keys %html_hash) {
+    print $OUT "$col\t";
+    foreach (nsort keys %{$html_hash{$col}}) {
+      print $OUT "$html_hash{$col}{$_}\t";
+    }
+    print $OUT "\n";
+  }
 }
+close $OUT;
 
 __END__
