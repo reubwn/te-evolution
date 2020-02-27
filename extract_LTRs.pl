@@ -28,7 +28,7 @@ my ( $gff_file, $fasta_file, $gff_feature, $help, $debug );
 my $outprefix = "extraction";
 
 GetOptions (
-  'i|input=s' => \$gff_file,
+  'g|gff=s' => \$gff_file,
   'f|fasta=s' => \$fasta_file,
   'o|out:s' => \$outprefix,
   'e|feature:s' => \$gff_feature,
