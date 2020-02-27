@@ -136,7 +136,7 @@ foreach my $fasta_file (nsort @fasta_files) {
 
   ## BLAST vs each database in turn
   foreach my $database (@databases_blastdb) {
-    print STDERR "[INFO] BLASTing query '$repeat_id' TE-tags versus database '$databases_names{$database}'...\n";
+    print STDERR "[INFO] BLAST query '$repeat_id' vs database '$databases_names{$database}'...\n";
 
     ## open blast filehandle
     open (my $BLASTCMD, "blastn -task blastn -num_threads $threads -evalue $evalue -query $fasta_file -db $database -outfmt '6 std qcovhsp' |") or die $!;
