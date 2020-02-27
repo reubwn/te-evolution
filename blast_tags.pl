@@ -14,7 +14,7 @@ my $usage = "
 SYNOPSIS
 
 OPTIONS [*] = required
-  -i|--in      [FILE] : FoF list of genomes to search (txt) [*]
+  -i|--input   [FILE] : FoFN list of genomes to search (txt) [*]
   -f|--fasta   [PATH] : path to 'sequence/' dir output from 'create_tags.pl' [*]
   -d|--dbs   [STRING] : comma delim list of genomes to search (fasta) [alternative to -i]
   -n|--names [STRING] : comma delim list of column names to print, instead of full db names; must be same order as '--dbs'
@@ -43,7 +43,7 @@ my $evalue = "1e-5";
 my $threads = 4;
 
 GetOptions (
-  'i|in:s' => \$infile,
+  'i|input:s' => \$infile,
   'f|fasta=s' => \$fasta_path,
   'd|db:s' => \$db_string,
   'n|names:s' => \$names_string,
