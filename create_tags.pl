@@ -67,7 +67,7 @@ while (<$GFF>) {
   ## get repeat ID
   if ( $F[2] eq "repeat_region" ) {
     if ($F[8] =~ m/ID=(\S+)/) {
-      $repeat_id = $1;
+      $repeat_id = join("_", $F[0],$1); ## prepend scaffold id to make unique across samples
       $repeat_regions{$repeat_id} = $F[0];
     }
   }
@@ -80,8 +80,8 @@ while (<$GFF>) {
     }
     if ( $seen_already{$repeat_id} ) {
       ## LTR is a rightie
-      my $left_coord = ($F[4]-$overhang_threshold+1) <= 0 ? 0 : ($F[4]-$overhang_threshold+1); ## left coord cannot be < 0 [this shouldn't happen for a rightie as it is inside the LTR]
-      my $right_coord = ($F[4]+$overhang_threshold) >= $scaffolds_hash{$F[0]}->length() ? $scaffolds_hash{$F[0]}->length() : ($F[4]+$overhang_threshold); ## right coord cannot be > seq length
+      my $left_coord = ($F[4]-$overhang_threshold+1) < 1 ? 1 : ($F[4]-$overhang_threshold+1); ## left coord cannot be < 1 [this shouldn't happen for a rightie as it is inside the LTR]
+      my $right_coord = ($F[4]+$overhang_threshold) > $scaffolds_hash{$F[0]}->length() ? $scaffolds_hash{$F[0]}->length() : ($F[4]+$overhang_threshold); ## right coord cannot be > seq length
       ## print TE tag
       print $FA ">$ltr_id:R:$left_coord..$right_coord\n";
       print $FA $scaffolds_hash{$F[0]} -> subseq( $left_coord,$right_coord ) . "\n";
@@ -90,8 +90,8 @@ while (<$GFF>) {
       ##                 ===== tag2
     } else {
       ## LTR is a leftie
-      my $left_coord = ($F[3]-$overhang_threshold) <= 0 ? 0 : ($F[3]-$overhang_threshold); ## left coord cannot be < 0
-      my $right_coord = ($F[3]+$overhang_threshold-1) >= $scaffolds_hash{$F[0]}->length() ? $scaffolds_hash{$F[0]}->length() : ($F[3]+$overhang_threshold-1); ## right coord cannot be > seq length [this shouldn't happen for a leftie as it is inside the LTR]
+      my $left_coord = ($F[3]-$overhang_threshold) < 1 ? 1 : ($F[3]-$overhang_threshold); ## left coord cannot be < 1
+      my $right_coord = ($F[3]+$overhang_threshold-1) > $scaffolds_hash{$F[0]}->length() ? $scaffolds_hash{$F[0]}->length() : ($F[3]+$overhang_threshold-1); ## right coord cannot be > seq length [this shouldn't happen for a leftie as it is inside the LTR]
       ## print TE tag
       print $FA ">$ltr_id:L:$left_coord..$right_coord\n";
       print $FA $scaffolds_hash{$F[0]} -> subseq( $left_coord,$right_coord ) . "\n";
