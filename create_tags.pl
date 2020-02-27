@@ -80,7 +80,7 @@ while (<$GFF>) {
     }
     if ( $seen_already{$repeat_id} ) {
       ## LTR is a rightie
-      my $left_coord = ($F[4]-$overhang_threshold+1) < 1 ? 1 : ($F[4]-$overhang_threshold+1); ## left coord cannot be < 1 [this shouldn't happen for a rightie as it is inside the LTR]
+      my $left_coord = ($F[4]-$overhang_threshold+1) < 1 ? 1 : ($F[4]-$overhang_threshold+1); ## left coord cannot be < 1 (NB this shouldn't happen for a rightie as it is inside the LTR)
       my $right_coord = ($F[4]+$overhang_threshold) > $scaffolds_hash{$F[0]}->length() ? $scaffolds_hash{$F[0]}->length() : ($F[4]+$overhang_threshold); ## right coord cannot be > seq length
       ## print TE tag
       print $FA ">$ltr_id:R:$left_coord..$right_coord\n";
@@ -90,8 +90,8 @@ while (<$GFF>) {
       ##                 ===== tag2
     } else {
       ## LTR is a leftie
-      my $left_coord = ($F[3]-$overhang_threshold) < 1 ? 1 : ($F[3]-$overhang_threshold); ## left coord cannot be < 1
-      my $right_coord = ($F[3]+$overhang_threshold-1) > $scaffolds_hash{$F[0]}->length() ? $scaffolds_hash{$F[0]}->length() : ($F[3]+$overhang_threshold-1); ## right coord cannot be > seq length [this shouldn't happen for a leftie as it is inside the LTR]
+      my $left_coord = ($F[3]-$overhang_threshold) < 1 ? 1 : ($F[3]-$overhang_threshold); ## left coord cannot be < 1 (NB subseq method is 1-based)
+      my $right_coord = ($F[3]+$overhang_threshold-1) > $scaffolds_hash{$F[0]}->length() ? $scaffolds_hash{$F[0]}->length() : ($F[3]+$overhang_threshold-1); ## right coord cannot be > seq length
       ## print TE tag
       print $FA ">$ltr_id:L:$left_coord..$right_coord\n";
       print $FA $scaffolds_hash{$F[0]} -> subseq( $left_coord,$right_coord ) . "\n";
