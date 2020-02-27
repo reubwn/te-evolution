@@ -15,7 +15,7 @@ my $usage = "
 SYNOPSIS
 
 OPTIONS [*] = required
-  -i|--in      [FILE] : list of SAM/BAM files to search (txt) [*]
+  -i|--in      [FILE] : FoF list of SAM/BAM files to search (txt) [*]
   -f|--fasta   [PATH] : path to 'sequence/' dir output from 'create_tags.pl' [*]
   -d|--dbs   [STRING] : comma delim list of databases to search (BAM/SAM) [alternative to -i]
   -n|--names [STRING] : comma delim list of column names to print, instead of full db names; must be same order as '--dbs'
