@@ -3,9 +3,7 @@
 use strict;
 use warnings;
 
-use Data::Dumper;
-use File::Basename;
-use Sort::Naturally;
+use Bio::SeqIO;
 use Getopt::Long qw(:config no_ignore_case);
 
 ## TODO
