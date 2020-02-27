@@ -68,7 +68,7 @@ while (my $line = <$GFF>) {
   my @F = split (m/\s+/, $line);
   if ( $gff_feature ) {
     if ( $F[2] eq $gff_feature ) {
-      print $OUT ">$F[0]:$F[3]..$F[4]:$F[2]\n";
+      print $OUT ">$F[0]:$F[3]..$F[4] \[$F[2]\]\n";
       print $OUT $scaffolds_hash{$F[0]} -> subseq($F[3],$F[4]) . "\n";
     } else {
       next;
@@ -79,6 +79,8 @@ while (my $line = <$GFF>) {
   }
 }
 close $OUT;
+print STDERR "[####] Done!\n";
+print STDERR "[####] " . `date`;
 
 ############### SUBS
 
