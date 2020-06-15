@@ -138,8 +138,8 @@ foreach my $database ( @databases_sams ) {
     close $SAM;
   } else {
     ## no reads have mapped
-    $sam_hash{$database} = ();
-    print STDERR "[INFO] No mapped reads in '$database'\n";
+    $sam_hash{$databases_names{$database}} = ();
+    print STDERR "[INFO] No mapped reads in '$database ($databases_names{$database})'\n";
   }
 }
 
@@ -181,11 +181,11 @@ foreach my $repeat_id ( nsort keys %repeat_hash ) {
   foreach my $database ( nsort keys %sam_hash ) {
     my @scores = qw/0/;
     my @counts = qw/0/;
-    foreach my $ltr_id ( nsort keys %{$sam_hash{$database}{$repeat_id}} ) {
-      foreach my $score ( (sort {$b<=>$a} keys %{$sam_hash{$database}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
-        print STDOUT join ("\t", "TOPHIT:",$databases_names{$database},$repeat_id,$ltr_id,$score,$sam_hash{$database}{$repeat_id}{$ltr_id}{$score}) . "\n" if ($debug);
+    foreach my $ltr_id ( nsort keys %{$sam_hash{$databases_names{$database}}{$repeat_id}} ) {
+      foreach my $score ( (sort {$b<=>$a} keys %{$sam_hash{$databases_names{$database}}{$repeat_id}{$ltr_id}})[0] ) { ## top hit!
+        print STDOUT join ("\t", "TOPHIT:",$databases_names{$database},$repeat_id,$ltr_id,$score,$sam_hash{$databases_names{$database}}{$repeat_id}{$ltr_id}{$score}) . "\n" if ($debug);
         push (@scores, $score);
-        push (@counts, $sam_hash{$database}{$repeat_id}{$ltr_id}{$score});
+        push (@counts, $sam_hash{$databases_names{$database}}{$repeat_id}{$ltr_id}{$score});
       }
     }
     print $SCORES "\t" . sum(@scores)/200;
