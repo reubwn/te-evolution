@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Getopt::Long qw(:config no_ignore_case);;
+use Getopt::Long qw(:config no_ignore_case);
 use Sort::Naturally;
 use Data::Dumper;
 
