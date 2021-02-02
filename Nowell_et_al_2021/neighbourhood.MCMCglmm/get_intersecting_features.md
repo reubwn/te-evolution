@@ -82,5 +82,5 @@ done
 ### Concatenate
 Cat the whole lot together:
 ```bash
-cat BUSCOs/*flanking.25kb.bed.span LINEs/*flanking.25kb.bed.span LTRs/*flanking.25kb.bed.span PLEs/*flanking.25kb.bed.span > neighbourhood.25kb.
+cat BUSCOs/*flanking.25kb.bed.span LINEs/*flanking.25kb.bed.span LTRs/*flanking.25kb.bed.span PLEs/*flanking.25kb.bed.span > neighbourhood.25kb.txt
 ```
